@@ -1,0 +1,37 @@
+generator client {
+  provider             = "prisma-client-py"
+  recursive_type_depth = 5
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String    @id @default(auto()) @map("_id") @db.ObjectId
+  email     String    @unique
+  fullName  String
+  password  String    
+  createdAt DateTime  @default(now())
+  accounts  Account[]
+}
+
+model Account {
+  id            String   @id @default(auto()) @map("_id") @db.ObjectId
+  accountNumber String   @unique
+  accountType   String   // e.g., "SAVINGS" or "CHECKING"
+  balance       Float    @default(0.0)
+  userId        String   @db.ObjectId
+  user          User     @relation(fields: [userId], references: [id])
+  transactions  Transaction[]
+}
+
+model Transaction {
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+  amount          Float
+  transactionType String   // "DEPOSIT", "WITHDRAWAL", "TRANSFER"
+  createdAt       DateTime @default(now())
+  accountId       String   @db.ObjectId
+  account         Account  @relation(fields: [accountId], references: [id])
+}
