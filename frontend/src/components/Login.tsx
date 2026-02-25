@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import { Link } from 'react-router-dom'; // Added for navigation
-import { Landmark, Mail, Lock, ArrowRight, ShieldCheck, UserPlus } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Landmark, Mail, Lock, ArrowRight, ShieldCheck, UserPlus, Fingerprint } from 'lucide-react';
 import './Login.scss';
 
 const API_BASE = "http://127.0.0.1:5000";
@@ -19,88 +19,92 @@ const Login: React.FC = () => {
 
     try {
       const response = await axios.post(`${API_BASE}/login`, { email, password });
-      // Store user data in localStorage for persistence
       localStorage.setItem('user', JSON.stringify(response.data.user));
-      window.location.href = '/dashboard'; // Redirect on success
+      window.location.href = '/dashboard';
     } catch (err: any) {
-      setError(err.response?.data?.error || "Connection to bank server failed");
+      setError(err.response?.data?.error || "Biometric/Server authentication failed");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="login-container min-h-screen flex items-center justify-center p-6">
-      <div className="glass-card w-full max-w-md p-8 rounded-[2.5rem] shadow-2xl">
-        
-        {/* Logo Section */}
-        <div className="flex flex-col items-center mb-10">
-          <div className="bg-blue-600 p-3 rounded-2xl text-white mb-4 shadow-lg">
-            <Landmark size={32} />
+    <div className="login-container">
+      <div className="login-card">
+        {/* Branding Section */}
+        <div className="text-center mb-8 md:mb-10">
+          <div className="logo-box">
+            <Landmark size={40} className="text-blue-400" />
           </div>
-          <h1 className="text-white text-2xl font-bold tracking-tight">Anoop Industry Bank</h1>
-          <p className="text-slate-400 text-xs font-medium uppercase tracking-[0.2em] mt-2">Secure Gateway</p>
+          <h1 className="brand-name">Anoop Industry</h1>
+          <div className="sub-header">
+            <span className="line"></span>
+            <p className="sub-text">Institutional Banking</p>
+            <span className="line"></span>
+          </div>
         </div>
 
         {error && (
-          <div className="mb-6 p-3 bg-red-500/10 border border-red-500/20 text-red-400 text-xs rounded-xl text-center">
+          <div className="error-alert">
+            <div className="error-indicator"></div>
             {error}
           </div>
         )}
 
-        <form onSubmit={handleLogin} className="space-y-5">
-          {/* Email Field */}
-          <div className="relative">
-            <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
-            <input 
-              type="email" 
-              placeholder="Email Address"
-              className="w-full bg-slate-800/50 border border-slate-700 text-white pl-12 pr-4 py-4 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all placeholder:text-slate-600"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
+        <form onSubmit={handleLogin} className="login-form">
+          <div className="input-group">
+            <div className="input-wrapper">
+              <Mail className="icon" size={20} />
+              <input 
+                type="email" 
+                placeholder="Secure Email Access"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+            </div>
           </div>
 
-          {/* Password Field */}
-          <div className="relative">
-            <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
-            <input 
-              type="password" 
-              placeholder="Password"
-              className="w-full bg-slate-800/50 border border-slate-700 text-white pl-12 pr-4 py-4 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all placeholder:text-slate-600"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
+          <div className="input-group">
+            <div className="input-wrapper">
+              <Lock className="icon" size={20} />
+              <input 
+                type="password" 
+                placeholder="Private Key / Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+            </div>
           </div>
 
           <button 
             type="submit" 
-            disabled={loading}
-            className="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-4 rounded-2xl flex items-center justify-center gap-2 transition-all active:scale-[0.98] disabled:opacity-50"
+            disabled={loading} 
+            className="btn-vault active:scale-95 transition-transform"
           >
-            {loading ? "Authenticating..." : (
+            {loading ? "Decrypting..." : (
               <>
-                Access Vault <ArrowRight size={18} />
+                <Fingerprint size={20} /> 
+                <span>Unlock My Vault</span> 
+                <ArrowRight size={18} className="arrow-icon" />
               </>
             )}
           </button>
         </form>
 
-        {/* Navigation to Registration */}
-        <div className="mt-6 text-center">
-          <p className="text-slate-500 text-sm">
-            New to Anoop Bank?{' '}
-            <Link to="/register" className="text-blue-400 hover:text-blue-300 font-semibold transition-colors inline-flex items-center gap-1">
-              Create Account <UserPlus size={14} />
+        <div className="card-footer">
+          <p className="footer-link-text">
+            New client?{' '}
+            <Link to="/register" className="register-link">
+              Establish Account <UserPlus size={16} />
             </Link>
           </p>
-        </div>
-
-        <div className="mt-8 pt-8 border-t border-slate-800 flex justify-center items-center gap-2 text-slate-500 text-[10px] uppercase font-bold tracking-tighter">
-          <ShieldCheck size={14} className="text-blue-500" />
-          <span>Encrypted with 256-bit SSL</span>
+          
+          <div className="security-badge">
+            <ShieldCheck size={12} className="text-emerald-400" />
+            <span>Federal SSL 256-bit Encrypted</span>
+          </div>
         </div>
       </div>
     </div>
