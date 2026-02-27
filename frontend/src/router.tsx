@@ -2,7 +2,9 @@ import { createBrowserRouter, Navigate } from 'react-router-dom';
 import Login from './components/Login';
 import Dashboard from './components/Dashboard';
 import Register from './components/Register';
-import AdminPanel from './pages/AdminPanel'; // Matching your folder structure
+import AdminPanel from './pages/AdminPanel'; 
+import CustomerOnboarding from './pages/CustomerOnboarding';
+import MainLayout from './layouts/MainLayout'; // Newly created Layout
 
 /**
  * ProtectedRoute Component
@@ -19,7 +21,7 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 /**
  * AdminRoute Component
  * Strict role-gating for high-level operations.
- * Only allows access if the user's role is MANAGER or ACCOUNTANT.
+ * Allows access for MANAGER and ACCOUNTANT roles.
  */
 const AdminRoute = ({ children }: { children: React.ReactNode }) => {
   const userStr = localStorage.getItem('user');
@@ -28,7 +30,6 @@ const AdminRoute = ({ children }: { children: React.ReactNode }) => {
   const user = JSON.parse(userStr);
   const allowedRoles = ['MANAGER', 'ACCOUNTANT'];
   
-  // If user is a CUSTOMER or CASHIER, they are bounced back to the dashboard
   if (!allowedRoles.includes(user.role)) {
     return <Navigate to="/dashboard" replace />;
   }
@@ -37,6 +38,7 @@ const AdminRoute = ({ children }: { children: React.ReactNode }) => {
 };
 
 export const router = createBrowserRouter([
+  // --- Public Routes ---
   {
     path: "/",
     element: <Login />,
@@ -45,26 +47,41 @@ export const router = createBrowserRouter([
     path: "/register", 
     element: <Register /> 
   },
+
+  // --- 🏛️ Internal Banking Shell (Protected) ---
   {
-    path: "/dashboard",
     element: (
       <ProtectedRoute>
-        <Dashboard />
+        <MainLayout />
       </ProtectedRoute>
     ),
+    children: [
+      {
+        path: "/dashboard",
+        element: <Dashboard />,
+      },
+      {
+        path: "/onboard",
+        element: (
+          <AdminRoute>
+            <CustomerOnboarding />
+          </AdminRoute>
+        ),
+      },
+      {
+        path: "/admin",
+        element: (
+          <AdminRoute>
+            <AdminPanel />
+          </AdminRoute>
+        ),
+      },
+    ]
   },
-  {
-    path: "/admin",
-    element: (
-      <ProtectedRoute>
-        <AdminRoute>
-          <AdminPanel />
-        </AdminRoute>
-      </ProtectedRoute>
-    ),
-  },
+
+  // --- Global Redirect ---
   {
     path: "*",
-    element: <Navigate to="/" replace />, // Global redirect for invalid URLs
+    element: <Navigate to="/" replace />, 
   },
 ]);

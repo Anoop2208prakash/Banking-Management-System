@@ -1,178 +1,168 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { 
-  Landmark, Wallet, ArrowUpRight, ArrowDownLeft, 
-  History, LogOut, RefreshCw, Plus, Send, Shield, Users, BarChart3, UserPlus, LayoutDashboard
+  Plus, Send, CreditCard, UserPlus, History, RefreshCw, 
+  ArrowUpRight, ArrowDownLeft 
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import './Dashboard.scss';
 
-// Interfaces remain the same for logic consistency
-interface Transaction {
-  id: string;
-  amount: number;
-  transactionType: 'DEPOSIT' | 'WITHDRAWAL' | 'TRANSFER_IN' | 'TRANSFER_OUT';
-  createdAt: string;
-  processedBy?: string;
-}
-
-interface UserProfile {
-  id: string;
-  name: string;
-  email: string;
-  role: 'MANAGER' | 'ACCOUNTANT' | 'CASHIER' | 'CUSTOMER';
-}
-
 const API_BASE = "http://127.0.0.1:5000";
 
 const Dashboard: React.FC = () => {
-  const [balance, setBalance] = useState<number>(0);
-  const [history, setHistory] = useState<Transaction[]>([]);
-  const [user, setUser] = useState<UserProfile | null>(null);
-  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+  const user = JSON.parse(localStorage.getItem('user') || '{}');
+  const [balance, setBalance] = useState<number>(0);
+  const [history, setHistory] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    const savedUser = localStorage.getItem('user');
-    if (savedUser) {
-      const parsedUser = JSON.parse(savedUser);
-      setUser(parsedUser);
-      if (parsedUser.role === 'CUSTOMER') fetchAccountDetails("USER_ACCOUNT_HERE");
-      else setLoading(false);
-    }
-  }, []);
-
-  const fetchAccountDetails = async (accNum: string) => {
+  // 🔄 Fetch real-time ledger data from your Flask backend
+  const fetchLedger = async () => {
+    // Only customers have a balance ledger to display in this view
+    if (user.role !== 'CUSTOMER') return;
     setLoading(true);
     try {
-      const res = await axios.get(`${API_BASE}/accounts/history/${accNum}`);
+      const res = await axios.get(`${API_BASE}/accounts/history/${user.email}`); 
       setBalance(res.data.balance);
       setHistory(res.data.history);
-    } catch (err) { console.error(err); } 
-    finally { setLoading(false); }
+    } catch (err) {
+      console.error("Ledger sync failed:", err);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem('user');
-    window.location.href = '/';
-  };
+  useEffect(() => { fetchLedger(); }, []);
 
   return (
-    <div className="dashboard-wrapper">
-      {/* 🏛️ Modern Sidebar */}
-      <aside className="sidebar">
-        <div className="flex items-center gap-3 mb-12 px-2">
-          <div className="bg-blue-600 p-2 rounded-xl text-white">
-            <Landmark size={24} />
-          </div>
-          <span className="text-lg font-bold tracking-tight">Anoop Industry</span>
+    <div className="dashboard-content-grid">
+      {/* 📈 Top Summary Row */}
+      <div className="stats-grid-row">
+        <div className="stat-widget">
+          <span className="label">Spent this month</span>
+          <span className="value">₹{(balance * 0.4).toLocaleString()}</span>
         </div>
-
-        <nav className="space-y-2 flex-1">
-          <div className="nav-item active"><LayoutDashboard size={20} /> Dashboard</div>
-          <div className="nav-item"><History size={20} /> Transactions</div>
-          {user?.role === 'MANAGER' && <div onClick={() => navigate('/admin')} className="nav-item"><Users size={20} /> Staff Hub</div>}
-          <div className="nav-item"><Shield size={20} /> Security</div>
-        </nav>
-
-        <div className="pt-6 border-t border-white/5">
-          <button onClick={handleLogout} className="nav-item text-rose-400 hover:bg-rose-500/10 w-full">
-            <LogOut size={20} /> Sign Out
-          </button>
+        <div className="stat-widget">
+          <span className="label">Received this month</span>
+          <span className="value">₹{(balance * 0.1).toLocaleString()}</span>
         </div>
-      </aside>
+        <div className="stat-widget">
+          <span className="label">Investments</span>
+          <span className="value">₹24,461</span>
+        </div>
+        <div className="stat-widget">
+          <span className="label">Cashback</span>
+          <span className="value">₹1,897</span>
+        </div>
+        <div onClick={fetchLedger} className="stat-widget sync-widget">
+          <RefreshCw size={24} className={loading ? 'animate-spin' : ''} />
+        </div>
+      </div>
 
-      {/* 🚀 Main Viewport */}
-      <main className="main-viewport">
-        <header className="flex justify-between items-center mb-10">
-          <div>
-            <h1 className="text-3xl font-extrabold text-white">Welcome, {user?.name.split(' ')[0]}</h1>
-            <p className="text-slate-400 text-sm font-medium mt-1">Today is Wednesday, Feb 25, 2026</p>
-          </div>
-          
-          <div className="flex items-center gap-4 bg-slate-900/50 p-2 rounded-2xl border border-white/5">
-            <div className="text-right px-4">
-              <span className="text-[9px] font-black uppercase tracking-widest text-blue-400">{user?.role}</span>
-              <p className="text-sm font-bold">{user?.name}</p>
+      {/* 🏛️ Main Operational Section */}
+      <div className="main-dashboard-columns">
+        
+        {/* 💳 Left Column: Bank Card & Actions */}
+        <div className="column-left space-y-8">
+          <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} className="bank-card-preview">
+            <div className="card-chip"></div>
+            <p className="balance-label">Institutional Balance</p>
+            <p className="balance-val">₹{balance.toLocaleString('en-IN')}</p>
+            <div className="mt-8 flex justify-between items-center">
+              <span className="text-xs tracking-widest uppercase">{user.role} LEDGER</span>
+              <div className="flex gap-1">
+                <div className="w-6 h-6 bg-red-500 rounded-full opacity-80"></div>
+                <div className="w-6 h-6 bg-orange-500 rounded-full -ml-3 opacity-80"></div>
+              </div>
             </div>
-            <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center font-bold">
-              {user?.name[0]}
-            </div>
-          </div>
-        </header>
+          </motion.div>
 
-        <div className="grid grid-cols-12 gap-8">
-          {/* Card & Quick Actions */}
-          <div className="col-span-12 lg:col-span-5 space-y-8">
-            <motion.div initial={{ x: -20, opacity: 0 }} animate={{ x: 0, opacity: 1 }} className="balance-card-modern">
-              <div className="relative z-10">
-                <p className="text-blue-100/70 text-sm font-bold uppercase tracking-wider mb-2">Total Liquidity</p>
-                <h2 className="text-5xl font-black">₹{balance.toLocaleString('en-IN')}</h2>
-                <div className="mt-8 pt-6 border-t border-white/10 flex justify-between">
-                   <div><p className="text-[10px] text-blue-200 font-bold uppercase">Status</p><p className="font-bold">Verified Account</p></div>
-                   <RefreshCw className={loading ? "animate-spin" : ""} size={20} />
+          {/* 📝 Accountant Enrollment Portal */}
+          {user.role === 'ACCOUNTANT' && (
+            <motion.div 
+              whileHover={{ scale: 1.02 }}
+              onClick={() => navigate('/onboard')} 
+              className="bg-blue-600 p-8 rounded-[2rem] text-white cursor-pointer shadow-lg shadow-blue-600/20"
+            >
+              <div className="flex justify-between items-center">
+                <div>
+                  <h3 className="font-bold text-lg">Onboard Client</h3>
+                  <p className="text-xs opacity-70">Form 104-A • KYC Process</p>
                 </div>
+                <UserPlus size={30} />
               </div>
             </motion.div>
+          )}
 
-            <div className="grid grid-cols-2 gap-4">
-              {user?.role === 'ACCOUNTANT' ? (
-                <>
-                  <div onClick={() => navigate('/register')} className="action-tile cursor-pointer">
-                    <div className="p-3 bg-emerald-500/10 text-emerald-500 rounded-2xl"><UserPlus /></div>
-                    <span className="font-bold text-xs uppercase">Onboard Client</span>
+          <div className="grid grid-cols-2 gap-4">
+            <button className="flex flex-col items-center gap-3 p-6 bg-white rounded-3xl shadow-sm hover:shadow-md transition-all">
+              <Plus className="text-blue-500" />
+              <span className="text-[10px] font-black uppercase">Deposit</span>
+            </button>
+            <button className="flex flex-col items-center gap-3 p-6 bg-white rounded-3xl shadow-sm hover:shadow-md transition-all">
+              <Send className="text-blue-500" />
+              <span className="text-[10px] font-black uppercase">Transfer</span>
+            </button>
+          </div>
+        </div>
+
+        {/* 📜 Middle Column: Live Transaction Feed */}
+        <div className="column-middle">
+          <div className="transaction-feed-light h-full">
+            <div className="feed-header">
+              <h3>Recent Transactions</h3>
+              <span className="view-all">View History</span>
+            </div>
+            
+            <div className="tx-list custom-scrollbar">
+              {history.length > 0 ? history.map((tx, idx) => (
+                <div key={idx} className="tx-item">
+                  <div className="tx-info">
+                    <div className="icon-box">
+                      {tx.transactionType.includes('IN') ? <ArrowDownLeft size={18} className="text-emerald-500"/> : <ArrowUpRight size={18} className="text-rose-500"/>}
+                    </div>
+                    <div>
+                      <p className="name">{tx.transactionType.replace('_', ' ')}</p>
+                      <p className="type">{new Date(tx.createdAt).toLocaleDateString()}</p>
+                    </div>
                   </div>
-                  <div className="action-tile">
-                    <div className="p-3 bg-amber-500/10 text-amber-500 rounded-2xl"><BarChart3 /></div>
-                    <span className="font-bold text-xs uppercase">Audit Log</span>
-                  </div>
-                </>
-              ) : (
-                <>
-                  <div className="action-tile">
-                    <div className="p-3 bg-blue-500/10 text-blue-500 rounded-2xl"><Plus /></div>
-                    <span className="font-bold text-xs uppercase">Deposit</span>
-                  </div>
-                  <div className="action-tile">
-                    <div className="p-3 bg-slate-500/10 text-slate-400 rounded-2xl"><Send /></div>
-                    <span className="font-bold text-xs uppercase">Transfer</span>
-                  </div>
-                </>
+                  <span className={`amount ${tx.transactionType.includes('IN') ? 'text-emerald-600' : 'text-slate-800'}`}>
+                    {tx.transactionType.includes('IN') ? '+' : '-'}₹{tx.amount.toLocaleString()}
+                  </span>
+                </div>
+              )) : (
+                <div className="text-center py-20 opacity-20 italic">
+                  <History size={40} className="mx-auto mb-4" />
+                  <p>No verified movements found.</p>
+                </div>
               )}
             </div>
           </div>
+        </div>
 
-          {/* Transaction Ledger */}
-          <div className="col-span-12 lg:col-span-7">
-            <div className="glass-panel h-full">
-              <div className="flex justify-between items-center mb-8">
-                <h3 className="text-xl font-bold">Transaction Ledger</h3>
-                <span className="text-[10px] bg-white/5 px-3 py-1 rounded-full text-slate-400 font-bold uppercase tracking-tighter">Real-time sync</span>
-              </div>
-
-              <div className="space-y-2 overflow-y-auto max-h-[450px] custom-scrollbar pr-2">
-                {history.map((tx) => (
-                  <div key={tx.id} className="tx-row group">
-                    <div className="flex items-center gap-4">
-                      <div className={`p-3 rounded-xl ${tx.transactionType.includes('IN') ? 'bg-emerald-500/10 text-emerald-500' : 'bg-rose-500/10 text-rose-500'}`}>
-                        {tx.transactionType.includes('IN') ? <ArrowDownLeft size={18} /> : <ArrowUpRight size={18} />}
-                      </div>
-                      <div>
-                        <p className="font-bold text-sm">{tx.transactionType.replace('_', ' ')}</p>
-                        <p className="text-[10px] text-slate-500 font-bold uppercase">{new Date(tx.createdAt).toLocaleDateString()}</p>
-                      </div>
-                    </div>
-                    <p className={`font-black ${tx.transactionType.includes('IN') ? 'text-emerald-400' : 'text-rose-400'}`}>
-                      {tx.transactionType.includes('IN') ? '+' : '-'}₹{tx.amount.toLocaleString()}
-                    </p>
-                  </div>
-                ))}
-              </div>
+        {/* 📅 Right Column: Offers & Schedule */}
+        <div className="column-right space-y-6">
+          <div className="bg-slate-800 p-8 rounded-[2rem] text-white relative overflow-hidden">
+            <span className="text-[10px] uppercase font-bold opacity-60 tracking-widest">Offers For You</span>
+            <h4 className="font-bold text-lg mt-3">100% Welcome Bonus</h4>
+            <p className="text-xs opacity-50 mt-2">Institutional rewards active.</p>
+          </div>
+          
+          <div className="schedule-widget">
+            <h4 className="font-bold text-sm text-slate-800">Payment Schedule</h4>
+            <div className="calendar-grid">
+              {['M','T','W','T','F','S','S'].map(d => <span key={d} className="day-label">{d}</span>)}
+              {Array.from({length: 14}).map((_, i) => (
+                <span key={i} className={`date-cell ${i === 4 ? 'active' : ''}`}>
+                  {i + 1}
+                </span>
+              ))}
             </div>
           </div>
         </div>
-      </main>
+
+      </div>
     </div>
   );
 };

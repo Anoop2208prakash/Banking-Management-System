@@ -1,0 +1,100 @@
+.onboard-container {
+  padding: 3rem;
+  background: #020617;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+}
+
+.bank-form {
+  max-width: 900px;
+  width: 100%;
+  background: #0f172a;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 2rem;
+  padding: 4rem;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+}
+
+.form-header {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  margin-bottom: 3rem;
+  border-bottom: 2px solid #1e293b;
+  padding-bottom: 2rem;
+  h1 { color: #f8fafc; font-size: 2rem; font-weight: 800; }
+  p { color: #64748b; font-weight: 600; font-size: 0.9rem; }
+}
+
+.form-section {
+  margin-bottom: 3rem;
+  .section-title {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    color: #3b82f6;
+    font-weight: 800;
+    text-transform: uppercase;
+    font-size: 0.8rem;
+    letter-spacing: 0.1em;
+    margin-bottom: 1.5rem;
+  }
+}
+
+.grid-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.25rem;
+  input, select {
+    background: #020617;
+    border: 1px solid #334155;
+    padding: 1rem;
+    border-radius: 0.75rem;
+    color: #f1f5f9;
+    font-size: 0.95rem;
+    &:focus { border-color: #3b82f6; outline: none; }
+  }
+  .col-span-2 { grid-column: span 2; }
+}
+
+.signature-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  .sig-box {
+    background: #020617;
+    border: 2px dashed #334155;
+    padding: 2rem;
+    border-radius: 1rem;
+    text-align: center;
+    p { color: #64748b; font-size: 0.75rem; font-weight: 700; margin-bottom: 1rem; }
+    .sig-input {
+      font-family: 'Dancing Script', cursive; // Optional: Adds a signature look
+      background: transparent;
+      border: none;
+      border-bottom: 1px solid #3b82f6;
+      width: 100%;
+      color: #f1f5f9;
+      text-align: center;
+      font-size: 1.5rem;
+    }
+  }
+}
+
+.submit-btn {
+  width: 100%;
+  background: #2563eb;
+  color: white;
+  padding: 1.5rem;
+  border-radius: 1rem;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s;
+  &:hover { background: #1d4ed8; transform: translateY(-3px); }
+}

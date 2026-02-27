@@ -1,113 +1,188 @@
 // src/Dashboard.scss
-$primary-blue: #2563eb;
-$navy-dark: #020617;
-$slate-dark: #0f172a;
-$glass-bg: rgba(255, 255, 255, 0.03);
 
-.dashboard-wrapper {
-  min-height: 100vh;
-  display: flex;
-  background: $navy-dark;
-  color: #f8fafc;
-  font-family: 'Plus Jakarta Sans', sans-serif;
+// --- Institutional Variables ---
+$bg-main: #f8fafb;
+$white: #ffffff;
+$text-main: #2c3e50;
+$text-muted: #94a3b8;
+$accent-blue: #3b82f6;
+$card-shadow: 0 10px 30px rgba(0, 0, 0, 0.03);
+$transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
-  // Modern Sidebar
-  .sidebar {
-    width: 280px;
-    background: $slate-dark;
-    border-right: 1px solid rgba(255, 255, 255, 0.05);
-    display: flex;
-    flex-direction: column;
-    padding: 2rem 1.5rem;
-    position: sticky;
-    top: 0;
-    height: 100vh;
-
-    @media (max-width: 1024px) { display: none; } // Handle mobile later
-  }
-
-  // Main Content Area
-  .main-viewport {
-    flex: 1;
-    padding: 2rem 3rem;
-    overflow-y: auto;
-    background: radial-gradient(circle at top right, rgba(37, 99, 235, 0.05), transparent);
-  }
-}
-
-.glass-panel {
-  background: $glass-bg;
-  backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 2rem;
-  padding: 2rem;
-  box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.3);
-}
-
-.balance-card-modern {
-  background: linear-gradient(135deg, #2563eb, #1e40af);
-  padding: 2.5rem;
-  border-radius: 2.5rem;
-  position: relative;
-  overflow: hidden;
-  box-shadow: 0 25px 50px -12px rgba(37, 99, 235, 0.4);
-
-  &::before {
-    content: '';
-    position: absolute;
-    width: 200px;
-    height: 200px;
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 50%;
-    top: -50px;
-    right: -50px;
-  }
-}
-
-.nav-item {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  padding: 1rem 1.25rem;
-  border-radius: 1rem;
-  color: #94a3b8;
-  font-weight: 600;
-  transition: all 0.3s;
-  cursor: pointer;
-
-  &:hover, &.active {
-    background: rgba(37, 99, 235, 0.1);
-    color: #3b82f6;
-  }
-}
-
-.action-tile {
-  background: #0f172a;
-  border: 1px solid #1e293b;
-  border-radius: 1.5rem;
-  padding: 1.5rem;
+// --- Content Grid Container ---
+.dashboard-content-grid {
+  animation: fadeIn 0.6s ease-out;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 1rem;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  gap: 2.5rem;
+}
 
-  &:hover {
-    border-color: #3b82f6;
-    background: #1e293b;
-    transform: translateY(-5px);
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(15px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+// --- 📊 5-Column Summary Row ---
+.stats-grid-row {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 1.5rem;
+
+  @media (max-width: 1400px) {
+    grid-template-columns: repeat(3, 1fr);
+    .stat-widget:nth-child(n+4) { display: none; }
+  }
+
+  .stat-widget {
+    background: $white;
+    padding: 1.75rem;
+    border-radius: 1.5rem;
+    box-shadow: $card-shadow;
+    border: 1px solid rgba(0, 0, 0, 0.01);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    transition: $transition-smooth;
+
+    &:hover { transform: translateY(-5px); box-shadow: 0 15px 35px rgba(0, 0, 0, 0.06); }
+
+    .label { 
+      font-size: 0.7rem; 
+      color: $text-muted; 
+      font-weight: 800; 
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 0.5rem; 
+    }
+
+    .value { font-size: 1.6rem; font-weight: 900; color: $text-main; }
+
+    &.sync-widget {
+      border: 2px dashed #e2e8f0;
+      background: transparent;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: #cbd5e1;
+      &:hover { background: $white; border-color: $accent-blue; color: $accent-blue; }
+    }
   }
 }
 
-.tx-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1.25rem;
-  border-radius: 1.25rem;
-  background: rgba(255, 255, 255, 0.02);
-  margin-bottom: 0.75rem;
-  transition: background 0.2s;
+// --- 🏛️ Main Layout Sections (12-Column Grid) ---
+.main-dashboard-columns {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 2rem;
 
-  &:hover { background: rgba(255, 255, 255, 0.05); }
+  .column-left { grid-column: span 4; }
+  .column-middle { grid-column: span 5; }
+  .column-right { grid-column: span 3; }
+
+  @media (max-width: 1200px) {
+    .column-left, .column-middle, .column-right { grid-column: span 12; }
+  }
+}
+
+// --- 💳 Bank Card Preview ---
+.bank-card-preview {
+  background: linear-gradient(135deg, #475569 0%, #1e293b 100%);
+  border-radius: 2.5rem;
+  padding: 2.5rem;
+  color: white;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 25px 50px -12px rgba(30, 41, 59, 0.25);
+
+  .card-chip { 
+    width: 48px; height: 36px; 
+    background: linear-gradient(135deg, #fde047, #ca8a04); 
+    border-radius: 8px; margin-bottom: 3rem;
+  }
+
+  .balance-label { font-size: 0.75rem; text-transform: uppercase; font-weight: 700; opacity: 0.6; }
+  .balance-val { font-size: 2.5rem; font-weight: 900; margin-top: 0.5rem; }
+}
+
+// --- 📜 Transaction Feed ---
+.transaction-feed-light {
+  background: $white;
+  border-radius: 2rem;
+  padding: 2.5rem;
+  box-shadow: $card-shadow;
+  display: flex;
+  flex-direction: column;
+
+  .feed-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    h3 { font-weight: 800; font-size: 1.1rem; color: $text-main; }
+    .view-all { font-size: 0.75rem; font-weight: 800; color: $accent-blue; cursor: pointer; }
+  }
+
+  .tx-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    overflow-y: auto;
+    max-height: 450px; // Fixed height for scrolling consistency
+    padding-right: 0.5rem;
+
+    .tx-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1.25rem;
+      border-radius: 1.25rem;
+      transition: $transition-smooth;
+      border: 1px solid transparent;
+
+      &:hover { background: #f8fafb; border-color: #f1f5f9; transform: translateX(8px); }
+
+      .tx-info {
+        display: flex;
+        align-items: center;
+        gap: 1.25rem;
+        .icon-box { background: #f1f5f9; padding: 0.85rem; border-radius: 1rem; color: $text-main; }
+        .name { font-weight: 800; font-size: 0.95rem; color: $text-main; }
+        .type { font-size: 0.75rem; color: $text-muted; font-weight: 600; }
+      }
+      .amount { font-weight: 900; font-size: 1rem; color: $text-main; }
+    }
+  }
+}
+
+// --- 📅 Sidebar Schedule Widget ---
+.schedule-widget {
+  background: $white;
+  padding: 2rem;
+  border-radius: 2rem;
+  box-shadow: $card-shadow;
+
+  .calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 0.75rem;
+    margin-top: 1.5rem;
+    .day-label { font-size: 0.65rem; font-weight: 800; color: $text-muted; text-align: center; }
+    .date-cell {
+      aspect-ratio: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.8rem; font-weight: 700;
+      border-radius: 0.75rem; transition: $transition-smooth;
+      &:hover { background: #f1f5f9; }
+      &.active { background: $accent-blue; color: $white; box-shadow: 0 8px 20px rgba(59, 130, 246, 0.3); }
+    }
+  }
+}
+
+// --- 🎨 Custom Scrollbar ---
+.custom-scrollbar {
+  &::-webkit-scrollbar { width: 4px; }
+  &::-webkit-scrollbar-track { background: transparent; }
+  &::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
 }

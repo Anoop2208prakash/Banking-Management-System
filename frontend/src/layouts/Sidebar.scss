@@ -1,0 +1,182 @@
+// src/components/Sidebar.scss
+
+// --- Institutional Variables ---
+// Defined locally to prevent "Undefined variable" errors
+$sidebar-bg: #7c8894;     // Professional Slate Gray
+$white: #ffffff;
+$text-main: #2c3e50;      // Dark Navy for active text
+$text-muted: rgba(255, 255, 255, 0.65);
+$accent-blue: #3498db;
+$transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+.sidebar-abc {
+  width: 280px;
+  background: $sidebar-bg;
+  color: $white;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  padding: 2.5rem 1.5rem;
+  position: sticky; // Keeps sidebar anchored during scrolling
+  top: 0;
+  z-index: 100;
+
+  // --- Branding Area ---
+  .logo-area {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    font-size: 1.6rem;
+    font-weight: 900;
+    margin-bottom: 4rem;
+    cursor: pointer;
+    transition: opacity 0.2s;
+
+    &:hover { opacity: 0.9; }
+
+    .logo-box {
+      width: 34px;
+      height: 34px;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transform: rotate(45deg); // Geometric brand icon
+
+      .logo-inner {
+        width: 14px;
+        height: 14px;
+        background: $white;
+        border-radius: 2px;
+      }
+    }
+
+    span {
+      letter-spacing: -0.02em;
+    }
+  }
+
+  // --- Navigation Links ---
+  .nav-group {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+
+    .nav-item-light {
+      display: flex;
+      align-items: center;
+      gap: 1.25rem;
+      padding: 1rem 1.5rem;
+      border-radius: 1.25rem;
+      color: $text-muted;
+      font-weight: 700;
+      font-size: 0.95rem;
+      transition: $transition-smooth;
+      cursor: pointer;
+      user-select: none;
+
+      // Hover State
+      &:hover {
+        background: rgba(255, 255, 255, 0.1);
+        color: $white;
+      }
+
+      // 🎯 Active Link Styling (Current Page)
+      &.active {
+        background: $white;
+        color: $text-main;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.12);
+        transform: translateX(6px); // Visual indicator of selection
+
+        svg {
+          color: $accent-blue; // Icon color shift for active item
+        }
+      }
+
+      svg {
+        transition: color 0.3s ease;
+      }
+    }
+  }
+
+  // --- Sidebar Footer Section ---
+  .sidebar-footer {
+    padding-top: 2rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+
+    // Support / CTA Widget
+    .help-widget {
+      background: rgba(255, 255, 255, 0.08);
+      padding: 1.5rem;
+      border-radius: 1.5rem;
+      margin-bottom: 2rem;
+      text-align: center;
+
+      p {
+        font-size: 0.75rem;
+        font-weight: 800;
+        margin-bottom: 1rem;
+        opacity: 0.8;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+      }
+
+      button {
+        width: 100%;
+        background: $white;
+        color: $text-main;
+        border: none;
+        padding: 0.6rem;
+        border-radius: 0.75rem;
+        font-size: 0.75rem;
+        font-weight: 900;
+        cursor: pointer;
+        transition: $transition-smooth;
+
+        &:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+      }
+    }
+
+    // Logout Styling
+    .logout-btn {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      color: #ffbaba; // Soft red for warning action
+      font-weight: 800;
+      font-size: 0.9rem;
+      padding: 1rem 1.5rem;
+      border-radius: 1rem;
+      cursor: pointer;
+      transition: background 0.2s;
+
+      &:hover {
+        background: rgba(255, 186, 186, 0.1);
+      }
+    }
+  }
+}
+
+// --- Responsive Breakpoints ---
+@media (max-width: 1024px) {
+  .sidebar-abc {
+    width: 80px;
+    padding: 2rem 1rem;
+
+    .logo-area span, 
+    .nav-item-light span, 
+    .sidebar-footer {
+      display: none; // Collapse to icons only on smaller screens
+    }
+
+    .nav-item-light {
+      justify-content: center;
+      padding: 1rem;
+    }
+  }
+}

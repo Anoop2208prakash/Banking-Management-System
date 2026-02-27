@@ -1,0 +1,45 @@
+// src/layouts/MainLayout.scss
+$sidebar-bg: #7c8894; // FIX: Define the variable here
+$bg-light: #f8fafb;
+
+.app-container {
+  display: flex; // FIX: Aligns sidebar and content horizontally
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+
+  .main-viewport {
+    flex: 1; // Fills remaining space
+    display: flex;
+    flex-direction: column;
+    background-color: $bg-light;
+    overflow: hidden;
+
+    .page-content {
+      flex: 1;
+      padding: 2.5rem;
+      overflow-y: auto; // Content scrolls here
+    }
+  }
+}
+
+// src/components/Header.scss
+$sidebar-bg: #7c8894; // FIX: Copy variable here to prevent undefined error
+
+.header-navbar {
+  height: 80px;
+  background: white;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 2.5rem;
+  border-bottom: 1px solid rgba(0,0,0,0.05);
+
+  // Use the variable correctly
+  .profile-img {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 2px solid $sidebar-bg; 
+  }
+}

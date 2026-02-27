@@ -1,5 +1,7 @@
 import asyncio
 import traceback
+import cloudinary
+import cloudinary.uploader
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 from db import db, connect_db
@@ -8,62 +10,98 @@ from utils import hash_password, verify_password, generate_account_number
 app = Flask(__name__)
 CORS(app)
 
-# --- STABLE CONNECTION HELPER ---
+# --- ☁️ CLOUDINARY CONFIGURATION ---
+# Using your provided credentials for institutional image hosting
+cloudinary.config( 
+  cloud_name = "dfsuat2el", 
+  api_key = "811246744629417", 
+  api_secret = "__akJozJOJXD4nHKB7rFG3EsZzY",
+  secure = True
+)
 
+# --- STABLE CONNECTION HELPER ---
 async def get_db_connection():
-    """Ensures stable connection using the current request's loop."""
     if not db.is_connected():
         await db.connect()
     return db
 
 # --- SYSTEM ROUTES ---
-
 @app.get("/")
 def home():
     return jsonify({
         "status": "Anoop Industry Bank API is active", 
-        "version": "3.10.11-Stable",
-        "owner": "Anoop Prakash" #
+        "version": "4.0.0-Cloud-Stable",
+        "owner": "Anoop Prakash"
     })
 
-# --- AUTHENTICATION & STAFF-LED REGISTRATION ---
+# --- 🏦 ENROLLMENT & AUTHENTICATION ---
 
 @app.post("/register")
 async def register():
     """
-    Handles both public signups and staff-led onboarding.
-    Accountants can create CUSTOMER accounts via this route.
+    Handles detailed Customer Enrollment with Cloudinary Image Upload.
+    Supports 15+ KYC fields including Aadhar, Nominee, and Residential data.
     """
     try:
         database = await get_db_connection()
-        data = request.json
+        
+        # 1. Handle Multipart Form Data (For Image + JSON fields)
+        data = request.form.to_dict()
+        profile_file = request.files.get('profileImage')
         
         if not data or 'email' not in data:
-            return jsonify({"error": "Missing required fields"}), 400
+            return jsonify({"error": "Identity credentials missing"}), 400
 
-        # Verify if user already exists
+        # Verify Uniqueness
         existing_user = await database.user.find_unique(where={'email': data['email']})
         if existing_user:
-            return jsonify({"error": "Email already registered"}), 400
+            return jsonify({"error": "Email already registered in system"}), 400
 
-        # Role Handling: Defaults to CUSTOMER. 
-        # Staff (Accountant/Manager) can specify a role in the request body.
+        # 2. Upload Profile Image to Cloudinary if provided
+        image_url = None
+        if profile_file:
+            upload_result = cloudinary.uploader.upload(profile_file, folder="bank_kyc_profiles")
+            image_url = upload_result.get('secure_url')
+
+        # 3. Create full Institutional User Profile
+        # We map 'fullName' from firstName/lastName if not provided directly
+        full_name = data.get("fullName") or f"{data.get('firstName', '')} {data.get('lastName', '')}".strip()
+
         user = await database.user.create(
             data={
                 "email": data["email"],
-                "fullName": data["fullName"],
                 "password": hash_password(data['password']),
-                "role": data.get('role', 'CUSTOMER') 
+                "fullName": full_name,
+                "role": data.get('role', 'CUSTOMER'),
+                # KYC / Customer specific fields (optional for staff)
+                "firstName": data.get("firstName"),
+                "lastName": data.get("lastName"),
+                "phone": data.get("phone"),
+                "aadharNo": data.get("aadharNo"),
+                "age": int(data.get("age", 0)) if data.get("age") else None,
+                "gender": data.get("gender"),
+                "address": data.get("address"),
+                "city": data.get("city"),
+                "landmark": data.get("landmark"),
+                "pincode": data.get("pincode"),
+                "state": data.get("state"),
+                "nomineeName": data.get("nomineeName"),
+                "nomineePhone": data.get("nomineePhone"),
+                "nomineeAddress": data.get("nomineeAddress"),
+                "nomineeEmail": data.get("nomineeEmail"),
+                "clientSign": image_url # Store the Cloudinary URL
             }
         )
+        
         return jsonify({
-            "message": f"Account for {user.fullName} created successfully", 
-            "user_id": user.id, 
-            "role": user.role
+            "message": f"Vault Identity for {user.fullName} created", 
+            "user_id": user.id,
+            "imageUrl": image_url
         }), 201
+        
     except Exception as e:
         print(traceback.format_exc())
-        return jsonify({"error": "Registration failed", "details": str(e)}), 500
+        return jsonify({"error": "Enrollment failed", "details": str(e)}), 500
 
 @app.post("/login")
 async def login():
@@ -79,31 +117,19 @@ async def login():
                     "id": user.id, 
                     "name": user.fullName, 
                     "email": user.email,
-                    "role": user.role # Critical for frontend RBAC
+                    "role": user.role,
+                    "profileImage": user.clientSign # Return photo for dashboard
                 }
             }), 200
             
-        return jsonify({"error": "Invalid email or password"}), 401
+        return jsonify({"error": "Invalid credentials"}), 401
     except Exception as e:
-        return jsonify({"error": "Login failed", "details": str(e)}), 500
-
-# --- ADMINISTRATIVE OPERATIONS (MANAGER & ACCOUNTANT) ---
-
-@app.get("/admin/users")
-async def get_all_users():
-    """Allows Managers and Accountants to view the global registry."""
-    try:
-        database = await get_db_connection()
-        users = await database.user.find_many(include={"accounts": True})
-        return jsonify(users), 200
-    except Exception as e:
-        return jsonify({"error": "Failed to fetch users"}), 500
+        return jsonify({"error": "Auth failed", "details": str(e)}), 500
 
 # --- BANKING OPERATIONS ---
 
 @app.post("/accounts/open")
 async def open_account():
-    """Used by Accountants or Customers to initialize a new ledger."""
     try:
         database = await get_db_connection()
         data = request.json
@@ -115,13 +141,12 @@ async def open_account():
                 "userId": data.get('userId')
             }
         )
-        return jsonify({"message": "Account opened", "accountNumber": new_account.accountNumber}), 201
+        return jsonify({"message": "Ledger initialized", "accountNumber": new_account.accountNumber}), 201
     except Exception as e:
         return jsonify({"error": "Account setup failed", "details": str(e)}), 500
 
 @app.post("/accounts/deposit")
 async def deposit():
-    """Standard deposit route with staff auditing enabled."""
     try:
         database = await get_db_connection()
         data = request.json
@@ -136,38 +161,12 @@ async def deposit():
                 "amount": amount, 
                 "transactionType": "DEPOSIT",
                 "accountId": account.id,
-                "processedBy": data.get('staffId') # Audit trail
+                "processedBy": data.get('staffId')
             }
         )
-        return jsonify({"message": "Deposit successful", "newBalance": account.balance}), 200
+        return jsonify({"message": "Deposit synced", "newBalance": account.balance}), 200
     except Exception as e:
-        return jsonify({"error": "Deposit failed", "details": str(e)}), 500
-
-@app.post("/accounts/transfer")
-async def transfer():
-    """ACID-compliant batch transfer logic."""
-    try:
-        database = await get_db_connection()
-        data = request.json
-        s_num, r_num, amt = data.get('fromAccount'), data.get('toAccount'), float(data.get('amount'))
-
-        sender = await database.account.find_unique(where={'accountNumber': s_num})
-        receiver = await database.account.find_unique(where={'accountNumber': r_num})
-        
-        if not sender or sender.balance < amt:
-            return jsonify({"error": "Insufficient funds"}), 400
-        if not receiver:
-            return jsonify({"error": "Receiver not found"}), 404
-
-        async with database.batch_() as batch:
-            batch.account.update(where={'accountNumber': s_num}, data={'balance': {'decrement': amt}})
-            batch.account.update(where={'accountNumber': r_num}, data={'balance': {'increment': amt}})
-            batch.transaction.create(data={"amount": amt, "transactionType": "TRANSFER_OUT", "accountId": sender.id})
-            batch.transaction.create(data={"amount": amt, "transactionType": "TRANSFER_IN", "accountId": receiver.id})
-        
-        return jsonify({"message": f"Transferred ₹{amt} successfully"}), 200
-    except Exception as e:
-        return jsonify({"error": "Transfer failed", "details": str(e)}), 500
+        return jsonify({"error": "Transaction failed", "details": str(e)}), 500
 
 @app.get("/accounts/history/<acc_num>")
 async def get_history(acc_num):
@@ -179,7 +178,11 @@ async def get_history(acc_num):
         )
         if not account:
             return jsonify({"error": "Account not found"}), 404
-        return jsonify({"account": acc_num, "balance": account.balance, "history": account.transactions})
+        return jsonify({
+            "account": acc_num, 
+            "balance": account.balance, 
+            "history": sorted(account.transactions, key=lambda x: x.createdAt, reverse=True)
+        })
     except Exception as e:
         return jsonify({"error": "Fetch failed", "details": str(e)}), 500
 
