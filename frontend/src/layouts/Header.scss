@@ -1,47 +1,138 @@
 // src/components/Header.scss
+
+// --- Institutional Variables ---
 $white: #ffffff;
-$text-main: #2c3e50;
-$text-muted: #95a5a6;
-$accent-blue: #3498db;
-$border-light: rgba(0, 0, 0, 0.04);
+$bg-soft: #f8fafb;
+$text-main: #1e293b;
+$text-muted: #94a3b8;
+$accent-blue: #3b82f6;
+$sidebar-bg: #7c8894; // Fixed: Defined locally for consistency
+$transition-base: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
-// 🔍 ADD THIS VARIABLE
-$sidebar-bg: #7c8894; 
-
-.dashboard-header-abc {
-  height: 80px;
+.header-navbar-modern {
+  height: 85px;
   background: $white;
-  padding: 0 3.5rem;
+  padding: 0 2.5rem;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  border-bottom: 1px solid $border-light;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
   position: sticky;
   top: 0;
   z-index: 90;
+  backdrop-filter: blur(10px); // Subtle premium glass effect
 
-  // ... (rest of your search bar and actions code remains the same)
+  // --- 🔍 Modern Search Bar ---
+  .header-left {
+    .search-box-modern {
+      position: relative;
+      width: 420px;
 
-  // 👤 Profile
-  .user-profile-trigger {
-    // ... (rest of your trigger code)
+      .search-icon {
+        position: absolute;
+        left: 1.2rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: $text-muted;
+        font-size: 0.9rem;
+      }
 
-    .avatar-wrapper {
-      width: 40px;
-      height: 40px;
-      border-radius: 12px;
-      overflow: hidden;
-      background: #f1f4f6;
+      input {
+        width: 100%;
+        background: $bg-soft;
+        border: 1px solid transparent;
+        padding: 0.85rem 1rem 0.85rem 3.2rem;
+        border-radius: 14px;
+        font-size: 0.9rem;
+        font-weight: 500;
+        color: $text-main;
+        transition: $transition-base;
+
+        &::placeholder { color: $text-muted; opacity: 0.8; }
+
+        &:focus {
+          background: $white;
+          border-color: rgba($accent-blue, 0.3);
+          box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
+          outline: none;
+        }
+      }
+    }
+  }
+
+  // --- ⚙️ Actions & Profile ---
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+
+    .action-icons {
       display: flex;
-      align-items: center;
-      justify-content: center;
+      gap: 0.75rem;
 
-      .avatar-img { width: 100%; height: 100%; object-fit: cover; }
-      
-      // ✅ Now this variable is defined and won't throw an error!
-      .avatar-placeholder { font-weight: 900; color: $sidebar-bg; } 
+      .icon-btn-modern {
+        width: 42px;
+        height: 42px;
+        border-radius: 12px;
+        background: transparent;
+        border: none;
+        color: $text-muted;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        position: relative;
+        transition: $transition-base;
+
+        &:hover { background: $bg-soft; color: $text-main; }
+
+        .notification-dot {
+          position: absolute;
+          top: 10px;
+          right: 10px;
+          width: 8px;
+          height: 8px;
+          background: #ef4444;
+          border: 2px solid $white;
+          border-radius: 50%;
+        }
+      }
     }
 
-    .dropdown-arrow { color: $text-muted; }
+    .divider-vertical {
+      width: 1px;
+      height: 32px;
+      background: rgba(0, 0, 0, 0.06);
+    }
+
+    // 👤 Profile Display
+    .user-profile-modern {
+      display: flex;
+      align-items: center;
+      gap: 1.2rem;
+      cursor: pointer;
+      padding: 0.5rem;
+      border-radius: 14px;
+      transition: $transition-base;
+
+      &:hover { background: $bg-soft; }
+
+      .user-meta {
+        text-align: right;
+        .user-name { font-size: 0.9rem; font-weight: 800; color: $text-main; margin-bottom: 2px; }
+        .user-role { font-size: 0.7rem; font-weight: 700; color: $accent-blue; text-transform: uppercase; letter-spacing: 0.05em; }
+      }
+
+      .avatar-container {
+        width: 44px;
+        height: 44px;
+        border-radius: 12px;
+        overflow: hidden;
+        background: #f1f4f6;
+        border: 2px solid rgba(0,0,0,0.03);
+
+        .profile-img-modern { width: 100%; height: 100%; object-fit: cover; }
+      }
+    }
   }
 }

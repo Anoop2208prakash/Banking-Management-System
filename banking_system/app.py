@@ -4,6 +4,7 @@ import cloudinary
 import cloudinary.uploader
 from flask import Flask, jsonify, request
 from flask_cors import CORS
+from asgiref.wsgi import WsgiToAsgi  # Bridge for Uvicorn support
 from db import db, connect_db
 from utils import hash_password, verify_password, generate_account_number
 
@@ -11,16 +12,17 @@ app = Flask(__name__)
 CORS(app)
 
 # --- ☁️ CLOUDINARY CONFIGURATION ---
-# Using your provided credentials for institutional image hosting
+# Professional institutional hosting credentials
 cloudinary.config( 
-  cloud_name = "dfsuat2el", 
-  api_key = "811246744629417", 
-  api_secret = "__akJozJOJXD4nHKB7rFG3EsZzY",
-  secure = True
+    cloud_name = "dfsuat2el", 
+    api_key = "811246744629417", 
+    api_secret = "__akJozJOJXD4nHKB7rFG3EsZzY",
+    secure = True
 )
 
 # --- STABLE CONNECTION HELPER ---
 async def get_db_connection():
+    """Ensures Prisma is connected before any database operation."""
     if not db.is_connected():
         await db.connect()
     return db
@@ -30,7 +32,7 @@ async def get_db_connection():
 def home():
     return jsonify({
         "status": "Anoop Industry Bank API is active", 
-        "version": "4.0.0-Cloud-Stable",
+        "version": "5.1.0-ASGI-Uvicorn",
         "owner": "Anoop Prakash"
     })
 
@@ -45,7 +47,7 @@ async def register():
     try:
         database = await get_db_connection()
         
-        # 1. Handle Multipart Form Data (For Image + JSON fields)
+        # 1. Handle Multipart Form Data
         data = request.form.to_dict()
         profile_file = request.files.get('profileImage')
         
@@ -64,7 +66,6 @@ async def register():
             image_url = upload_result.get('secure_url')
 
         # 3. Create full Institutional User Profile
-        # We map 'fullName' from firstName/lastName if not provided directly
         full_name = data.get("fullName") or f"{data.get('firstName', '')} {data.get('lastName', '')}".strip()
 
         user = await database.user.create(
@@ -73,7 +74,6 @@ async def register():
                 "password": hash_password(data['password']),
                 "fullName": full_name,
                 "role": data.get('role', 'CUSTOMER'),
-                # KYC / Customer specific fields (optional for staff)
                 "firstName": data.get("firstName"),
                 "lastName": data.get("lastName"),
                 "phone": data.get("phone"),
@@ -89,7 +89,7 @@ async def register():
                 "nomineePhone": data.get("nomineePhone"),
                 "nomineeAddress": data.get("nomineeAddress"),
                 "nomineeEmail": data.get("nomineeEmail"),
-                "clientSign": image_url # Store the Cloudinary URL
+                "clientSign": image_url 
             }
         )
         
@@ -118,7 +118,7 @@ async def login():
                     "name": user.fullName, 
                     "email": user.email,
                     "role": user.role,
-                    "profileImage": user.clientSign # Return photo for dashboard
+                    "profileImage": user.clientSign 
                 }
             }), 200
             
@@ -186,5 +186,12 @@ async def get_history(acc_num):
     except Exception as e:
         return jsonify({"error": "Fetch failed", "details": str(e)}), 500
 
+# --- ASGI WRAPPER & UVICORN EXECUTION ---
+
+# Create the ASGI application entry point to handle async operations
+asgi_app = WsgiToAsgi(app)
+
 if __name__ == "__main__":
-    app.run(debug=True, threaded=False)
+    import uvicorn
+    # Use the ASGI app to allow async handling with Uvicorn on Port 5000
+    uvicorn.run("app:asgi_app", host="127.0.0.1", port=5000, reload=True)

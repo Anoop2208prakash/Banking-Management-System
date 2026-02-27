@@ -1,9 +1,10 @@
-// src/components/Sidebar.tsx
 import React from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { 
-  FaUserPlus, FaUsers, FaShieldAlt, FaSignOutAlt 
-} from 'react-icons/fa';
+  LuLayoutDashboard, LuUserPlus, LuUsers, LuShieldCheck, 
+  LuLogOut
+} from 'react-icons/lu'; // Switched to Lucide icons for a thinner, modern stroke
+import { motion } from 'framer-motion';
 import './Sidebar.scss';
 
 const Sidebar: React.FC = () => {
@@ -11,40 +12,61 @@ const Sidebar: React.FC = () => {
   const user = JSON.parse(localStorage.getItem('user') || '{}');
 
   const menuItems = [
-    { name: 'Overview', icon: <FaShieldAlt />, path: '/dashboard', roles: ['ADMIN', 'MANAGER', 'ACCOUNTANT', 'CASHIER', 'CUSTOMER'] },
-    { name: 'Onboard Client', icon: <FaUserPlus />, path: '/onboard', roles: ['ACCOUNTANT', 'MANAGER'] },
-    { name: 'Staff Hub', icon: <FaUsers />, path: '/admin', roles: ['MANAGER', 'ADMIN'] },
-    { name: 'Security', icon: <FaShieldAlt />, path: '/security', roles: ['ADMIN', 'MANAGER', 'ACCOUNTANT', 'CASHIER', 'CUSTOMER'] },
+    { name: 'Overview', icon: <LuLayoutDashboard />, path: '/dashboard', roles: ['ADMIN', 'MANAGER', 'ACCOUNTANT', 'CASHIER', 'CUSTOMER'] },
+    { name: 'Onboard Client', icon: <LuUserPlus />, path: '/onboard', roles: ['ACCOUNTANT', 'MANAGER'] },
+    { name: 'Staff Hub', icon: <LuUsers />, path: '/admin', roles: ['MANAGER', 'ADMIN'] },
+    { name: 'Security', icon: <LuShieldCheck />, path: '/security', roles: ['ADMIN', 'MANAGER', 'ACCOUNTANT', 'CASHIER', 'CUSTOMER'] },
   ];
 
   return (
-    <aside className="sidebar">
+    <aside className="sidebar-modern">
+      {/* 🏛️ Premium Branding */}
       <div className="sidebar-header">
-        <div className="logo-area">
-          <div className="logo-icon"></div>
-          <span>ABC BANK</span>
+        <div className="brand-wrap" onClick={() => navigate('/dashboard')}>
+          <div className="brand-logo">
+            <div className="inner-diamond"></div>
+          </div>
+          <div className="brand-text">
+            <span className="main">ABC BANK</span>
+            <span className="sub">INSTITUTIONAL</span>
+          </div>
         </div>
       </div>
 
+      {/* 🚦 Navigation with Motion */}
       <nav className="sidebar-nav">
+        <div className="nav-label">Main Menu</div>
         {menuItems
           .filter(item => item.roles.includes(user.role))
           .map((item) => (
             <NavLink 
               key={item.name} 
               to={item.path} 
-              className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
+              className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
             >
-              {item.icon}
-              <span>{item.name}</span>
+              <span className="icon-wrap">{item.icon}</span>
+              <span className="label">{item.name}</span>
+              {location.pathname === item.path && (
+                <motion.div layoutId="active-pill" className="active-pill" />
+              )}
             </NavLink>
           ))}
       </nav>
 
+      {/* 🛠️ Modern Footer with Assistance Card */}
       <div className="sidebar-footer">
-        <button onClick={() => { localStorage.clear(); navigate('/'); }} className="logout-btn">
-          <FaSignOutAlt />
-          <span>Logout</span>
+        <div className="support-card">
+          {/* <LuHelpingHand className="support-icon" /> */}
+          <p>Need assistance?</p>
+          <button onClick={() => window.open('https://anoop-prakash.com')}>Contact Dev</button>
+        </div>
+        
+        <button 
+          onClick={() => { localStorage.clear(); navigate('/'); }} 
+          className="logout-action"
+        >
+          <LuLogOut />
+          <span>Terminate Session</span>
         </button>
       </div>
     </aside>

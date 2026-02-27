@@ -4,3 +4,4 @@ prisma==0.15.0
 python-dotenv
 asgiref>=3.7.2
 werkzeug==3.0.1
+cloudinary
