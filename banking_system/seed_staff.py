@@ -3,62 +3,76 @@ from db import db, connect_db, disconnect_db
 from utils import hash_password
 
 async def create_staff_accounts():
+    """
+    Initializes the Anoop Industry Bank administrative hierarchy.
+    Uses unique Aadhar placeholders to bypass E11000 duplicate key errors.
+    """
     await connect_db()
     
-    # 🏦 Staff data with unique Aadhar placeholders to satisfy DB constraints
+    # 🏦 Staff data with Institutional profile placeholders
     staff_data = [
         {
             "fullName": "Ravi Sharma",
             "email": "admin@anoopbank.com",
             "password": "Password123",
             "role": "ADMIN",
-            "aadharNo": "STAFF0001" 
+            "aadharNo": "STAFF0001",
+            "avatar": "https://res.cloudinary.com/dfsuat2el/image/upload/v1/bank_kyc_profiles/admin_default"
         },
         {
             "fullName": "Anoop Prakash",
             "email": "manager@anoopbank.com",
             "password": "Password123",
             "role": "MANAGER",
-            "aadharNo": "STAFF0002"
+            "aadharNo": "STAFF0002",
+            "avatar": "https://res.cloudinary.com/dfsuat2el/image/upload/v1/bank_kyc_profiles/manager_default"
         },
         {
             "fullName": "Suresh Kumar",
             "email": "accountant@anoopbank.com",
             "password": "Password123",
             "role": "ACCOUNTANT",
-            "aadharNo": "STAFF0003"
+            "aadharNo": "STAFF0003",
+            "avatar": "https://res.cloudinary.com/dfsuat2el/image/upload/v1/bank_kyc_profiles/staff_default"
         },
         {
             "fullName": "Priya Singh",
             "email": "cashier@anoopbank.com",
             "password": "Password123",
             "role": "CASHIER",
-            "aadharNo": "STAFF0004"
+            "aadharNo": "STAFF0004",
+            "avatar": "https://res.cloudinary.com/dfsuat2el/image/upload/v1/bank_kyc_profiles/staff_default"
         }
     ]
 
-    print("🚀 Re-syncing administrative accounts...")
+    print("🚀 Synchronizing Institutional Administrative Registry...")
 
     for staff in staff_data:
         try:
-            # Check if user already exists
+            # Check for existing identity
             existing = await db.user.find_unique(where={'email': staff['email']})
             
             if not existing:
-                user = await db.user.create(
+                await db.user.create(
                     data={
                         "fullName": staff["fullName"],
                         "email": staff["email"],
-                        "password": hash_password(staff["password"]),
+                        "password": hash_password(staff["password"]), # Salted hash for security
                         "role": staff["role"],
-                        "aadharNo": staff["aadharNo"] # Unique value prevents the E11000 error
+                        "aadharNo": staff["aadharNo"],
+                        "clientSign": staff["avatar"] # Populate profile image for Dashboard
                     }
                 )
-                print(f"✅ Created {staff['role']}: {staff['email']}")
+                print(f"✅ Identity Verified & Vault Created: {staff['role']} ({staff['email']})")
             else:
-                print(f"⏩ {staff['role']} already exists.")
+                # Update existing user role if necessary
+                await db.user.update(
+                    where={'email': staff['email']},
+                    data={"role": staff["role"]}
+                )
+                print(f"⏩ {staff['role']} identity already present in ledger.")
         except Exception as e:
-            print(f"❌ Error creating {staff['role']}: {e}")
+            print(f"❌ Critical Enrollment Failure for {staff['role']}: {e}")
 
     await disconnect_db()
 

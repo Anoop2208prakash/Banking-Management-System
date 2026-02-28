@@ -1,0 +1,123 @@
+// src/components/InstitutionalDataCard.scss
+
+// --- Professional Slate Variables ---
+$card-bg: #ffffff;
+$card-border: #e2e8f0; // Subtle light border
+$bg-main: #f8fafb;    // Very light grey background
+$text-label: #94a3b8; // Slate muted labels
+$text-value: #1e293b; // Slate primary values
+$transition-base: all 0.3s ease;
+
+// --- Institutional Tag Colors ---
+$status-active-bg: #dcfce7;
+$status-active-text: #166534; // Green for Active/Completed
+$status-active-icon: #34a853; 
+
+$status-suspended-bg: #fee2e2;
+$status-suspended-text: #991b1b; // Red for Suspended
+$status-suspended-icon: #ef4444;
+
+$status-checking-bg: #cffafe;
+$status-checking-text: #155e75; // Cyan for Checking
+
+$status-default-bg: #f1f5f9;
+$status-default-text: #475569; // Gray fallback
+
+.institutional-data-card {
+  background: $card-bg;
+  border: 1px solid $card-border;
+  border-radius: 1.5rem;
+  padding: 2.5rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02); // Modern subtle shadow
+  transition: $transition-base;
+  height: 100%; // Fill container
+
+  &:hover {
+    border-color: rgba($status-active-icon, 0.2); // Brand color hover interaction
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.04);
+  }
+
+  // Minimal Header
+  .card-header-minimal {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid rgba($card-border, 0.5);
+
+    .header-icon { font-size: 1.4rem; color: rgba($text-label, 0.7); }
+    .header-title { font-size: 1.2rem; font-weight: 800; color: $text-value; letter-spacing: -0.01em; }
+  }
+
+  // Data Grid
+  .card-body-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+
+    .data-field {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1.5rem;
+      padding-bottom: 0.75rem;
+      border-bottom: 1px solid rgba($card-border, 0.3); // Faint internal lines
+      
+      &:last-child { border-bottom: none; padding-bottom: 0; }
+
+      .data-label {
+        font-size: 0.75rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        color: $text-label;
+        flex-shrink: 0;
+      }
+
+      .data-value {
+        font-size: 0.95rem;
+        font-weight: 700;
+        color: $text-value;
+        text-align: right;
+        word-break: break-word; // Prevent overflow on long values
+      }
+
+      // Modern Tag/Pill
+      .data-tag {
+        font-size: 0.7rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        padding: 0.5rem 1rem;
+        border-radius: 2rem;
+        text-align: center;
+        
+        // Dynamic Status Colors
+        &.active, &.completed { background: $status-active-bg; color: $status-active-text; }
+        &.suspended, &.deleted { background: $status-suspended-bg; color: $status-suspended-text; }
+        &.checking { background: $status-checking-bg; color: $status-checking-text; }
+        &.pending { background: $status-default-bg; color: $status-default-text; }
+      }
+      
+      // Icon Tag Option
+      .data-tag-icon {
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+        font-size: 0.7rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        padding: 0.5rem 1rem;
+        border-radius: 2rem;
+
+        svg { font-size: 1rem; }
+
+        &.active, &.completed { background: $status-active-bg; color: $status-active-text; svg { color: $status-active-icon; } }
+        &.suspended { background: $status-suspended-bg; color: $status-suspended-text; svg { color: $status-suspended-icon; } }
+        &.checking { background: $status-checking-bg; color: $status-checking-text; svg { color: #06b6d4; } }
+      }
+    }
+  }
+}

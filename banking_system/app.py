@@ -1,15 +1,24 @@
-import asyncio
 import traceback
 import cloudinary
 import cloudinary.uploader
-from flask import Flask, jsonify, request
-from flask_cors import CORS
-from asgiref.wsgi import WsgiToAsgi  # Bridge for Uvicorn support
-from db import db, connect_db
+from fastapi import FastAPI, HTTPException, Request, UploadFile, File, Form, Depends
+from fastapi.middleware.cors import CORSMiddleware
+from typing import Optional, List
+from pydantic import BaseModel
+from db import db
 from utils import hash_password, verify_password, generate_account_number
 
-app = Flask(__name__)
-CORS(app)
+# Initialize FastAPI
+app = FastAPI(title="Anoop Industry Bank API", version="6.0.0-FastAPI")
+
+# --- 🛰️ CORS CONFIGURATION ---
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # --- ☁️ CLOUDINARY CONFIGURATION ---
 # Professional institutional hosting credentials
@@ -20,178 +29,171 @@ cloudinary.config(
     secure = True
 )
 
-# --- STABLE CONNECTION HELPER ---
-async def get_db_connection():
-    """Ensures Prisma is connected before any database operation."""
+# --- LIFECYCLE MANAGEMENT ---
+@app.on_event("startup")
+async def startup():
+    """Connect to Prisma on startup"""
     if not db.is_connected():
         await db.connect()
-    return db
+
+@app.on_event("shutdown")
+async def shutdown():
+    """Disconnect from Prisma on shutdown"""
+    if db.is_connected():
+        await db.disconnect()
+
+# --- REQUEST MODELS (Pydantic Validation) ---
+class LoginRequest(BaseModel):
+    email: str
+    password: str
+
+class AccountOpenRequest(BaseModel):
+    userId: str
+    type: str = "SAVINGS"
+
+class TransactionRequest(BaseModel):
+    accountNumber: str
+    amount: float
+    staffId: Optional[str] = None
 
 # --- SYSTEM ROUTES ---
 @app.get("/")
-def home():
-    return jsonify({
+async def home():
+    return {
         "status": "Anoop Industry Bank API is active", 
-        "version": "5.1.0-ASGI-Uvicorn",
+        "engine": "FastAPI + Uvicorn",
         "owner": "Anoop Prakash"
-    })
+    }
 
 # --- 🏦 ENROLLMENT & AUTHENTICATION ---
 
-@app.post("/register")
-async def register():
-    """
-    Handles detailed Customer Enrollment with Cloudinary Image Upload.
-    Supports 15+ KYC fields including Aadhar, Nominee, and Residential data.
-    """
+@app.post("/register", status_code=201)
+async def register(
+    email: str = Form(...),
+    password: str = Form(...),
+    fullName: Optional[str] = Form(None),
+    role: str = Form("CUSTOMER"),
+    firstName: Optional[str] = Form(None),
+    lastName: Optional[str] = Form(None),
+    phone: Optional[str] = Form(None),
+    aadharNo: Optional[str] = Form(None),
+    age: Optional[int] = Form(None),
+    gender: Optional[str] = Form(None),
+    address: Optional[str] = Form(None),
+    city: Optional[str] = Form(None),
+    landmark: Optional[str] = Form(None),
+    pincode: Optional[str] = Form(None),
+    state: Optional[str] = Form(None),
+    nomineeName: Optional[str] = Form(None),
+    nomineePhone: Optional[str] = Form(None),
+    nomineeAddress: Optional[str] = Form(None),
+    nomineeEmail: Optional[str] = Form(None),
+    profileImage: Optional[UploadFile] = File(None)
+):
+    """Handles detailed Enrollment with native Multipart support"""
     try:
-        database = await get_db_connection()
-        
-        # 1. Handle Multipart Form Data
-        data = request.form.to_dict()
-        profile_file = request.files.get('profileImage')
-        
-        if not data or 'email' not in data:
-            return jsonify({"error": "Identity credentials missing"}), 400
-
         # Verify Uniqueness
-        existing_user = await database.user.find_unique(where={'email': data['email']})
+        existing_user = await db.user.find_unique(where={'email': email})
         if existing_user:
-            return jsonify({"error": "Email already registered in system"}), 400
+            raise HTTPException(status_code=400, detail="Email already registered")
 
-        # 2. Upload Profile Image to Cloudinary if provided
+        # Cloudinary Upload
         image_url = None
-        if profile_file:
-            upload_result = cloudinary.uploader.upload(profile_file, folder="bank_kyc_profiles")
+        if profileImage:
+            upload_result = cloudinary.uploader.upload(profileImage.file, folder="bank_kyc_profiles")
             image_url = upload_result.get('secure_url')
 
-        # 3. Create full Institutional User Profile
-        full_name = data.get("fullName") or f"{data.get('firstName', '')} {data.get('lastName', '')}".strip()
-
-        user = await database.user.create(
+        # Create Prisma Record
+        full_name = fullName or f"{firstName or ''} {lastName or ''}".strip()
+        user = await db.user.create(
             data={
-                "email": data["email"],
-                "password": hash_password(data['password']),
+                "email": email,
+                "password": hash_password(password),
                 "fullName": full_name,
-                "role": data.get('role', 'CUSTOMER'),
-                "firstName": data.get("firstName"),
-                "lastName": data.get("lastName"),
-                "phone": data.get("phone"),
-                "aadharNo": data.get("aadharNo"),
-                "age": int(data.get("age", 0)) if data.get("age") else None,
-                "gender": data.get("gender"),
-                "address": data.get("address"),
-                "city": data.get("city"),
-                "landmark": data.get("landmark"),
-                "pincode": data.get("pincode"),
-                "state": data.get("state"),
-                "nomineeName": data.get("nomineeName"),
-                "nomineePhone": data.get("nomineePhone"),
-                "nomineeAddress": data.get("nomineeAddress"),
-                "nomineeEmail": data.get("nomineeEmail"),
+                "role": role,
+                "firstName": firstName,
+                "lastName": lastName,
+                "phone": phone,
+                "aadharNo": aadharNo,
+                "age": age,
+                "gender": gender,
+                "address": address,
+                "city": city,
+                "landmark": landmark,
+                "pincode": pincode,
+                "state": state,
+                "nomineeName": nomineeName,
+                "nomineePhone": nomineePhone,
+                "nomineeAddress": nomineeAddress,
+                "nomineeEmail": nomineeEmail,
                 "clientSign": image_url 
             }
         )
-        
-        return jsonify({
-            "message": f"Vault Identity for {user.fullName} created", 
-            "user_id": user.id,
-            "imageUrl": image_url
-        }), 201
+        return {"message": "Vault Identity created", "user_id": user.id, "imageUrl": image_url}
         
     except Exception as e:
         print(traceback.format_exc())
-        return jsonify({"error": "Enrollment failed", "details": str(e)}), 500
+        raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/login")
-async def login():
-    try:
-        database = await get_db_connection()
-        data = request.json
-        user = await database.user.find_unique(where={'email': data['email']})
-        
-        if user and verify_password(data['password'], user.password):
-            return jsonify({
-                "message": "Login successful",
-                "user": {
-                    "id": user.id, 
-                    "name": user.fullName, 
-                    "email": user.email,
-                    "role": user.role,
-                    "profileImage": user.clientSign 
-                }
-            }), 200
-            
-        return jsonify({"error": "Invalid credentials"}), 401
-    except Exception as e:
-        return jsonify({"error": "Auth failed", "details": str(e)}), 500
+async def login(req: LoginRequest):
+    user = await db.user.find_unique(where={'email': req.email})
+    if user and verify_password(req.password, user.password):
+        return {
+            "message": "Login successful",
+            "user": {
+                "id": user.id, 
+                "name": user.fullName, 
+                "role": user.role,
+                "profileImage": user.clientSign 
+            }
+        }
+    raise HTTPException(status_code=401, detail="Invalid credentials")
 
 # --- BANKING OPERATIONS ---
 
-@app.post("/accounts/open")
-async def open_account():
-    try:
-        database = await get_db_connection()
-        data = request.json
-        new_account = await database.account.create(
-            data={
-                "accountNumber": generate_account_number(),
-                "accountType": data.get('type', 'SAVINGS'), 
-                "balance": 0.0,
-                "userId": data.get('userId')
-            }
-        )
-        return jsonify({"message": "Ledger initialized", "accountNumber": new_account.accountNumber}), 201
-    except Exception as e:
-        return jsonify({"error": "Account setup failed", "details": str(e)}), 500
+@app.post("/accounts/open", status_code=201)
+async def open_account(req: AccountOpenRequest):
+    new_account = await db.account.create(
+        data={
+            "accountNumber": generate_account_number(),
+            "accountType": req.type, 
+            "balance": 0.0,
+            "userId": req.userId
+        }
+    )
+    return {"message": "Ledger initialized", "accountNumber": new_account.accountNumber}
 
 @app.post("/accounts/deposit")
-async def deposit():
-    try:
-        database = await get_db_connection()
-        data = request.json
-        acc_num, amount = data.get('accountNumber'), float(data.get('amount'))
+async def deposit(req: TransactionRequest):
+    account = await db.account.update(
+        where={'accountNumber': req.accountNumber},
+        data={'balance': {'increment': req.amount}}
+    )
+    await db.transaction.create(
+        data={
+            "amount": req.amount, 
+            "transactionType": "DEPOSIT",
+            "accountId": account.id,
+            "processedBy": req.staffId
+        }
+    )
+    return {"message": "Deposit synced", "newBalance": account.balance}
 
-        account = await database.account.update(
-            where={'accountNumber': acc_num},
-            data={'balance': {'increment': amount}}
-        )
-        await database.transaction.create(
-            data={
-                "amount": amount, 
-                "transactionType": "DEPOSIT",
-                "accountId": account.id,
-                "processedBy": data.get('staffId')
-            }
-        )
-        return jsonify({"message": "Deposit synced", "newBalance": account.balance}), 200
-    except Exception as e:
-        return jsonify({"error": "Transaction failed", "details": str(e)}), 500
-
-@app.get("/accounts/history/<acc_num>")
-async def get_history(acc_num):
-    try:
-        database = await get_db_connection()
-        account = await database.account.find_unique(
-            where={'accountNumber': acc_num}, 
-            include={'transactions': True}
-        )
-        if not account:
-            return jsonify({"error": "Account not found"}), 404
-        return jsonify({
-            "account": acc_num, 
-            "balance": account.balance, 
-            "history": sorted(account.transactions, key=lambda x: x.createdAt, reverse=True)
-        })
-    except Exception as e:
-        return jsonify({"error": "Fetch failed", "details": str(e)}), 500
-
-# --- ASGI WRAPPER & UVICORN EXECUTION ---
-
-# Create the ASGI application entry point to handle async operations
-asgi_app = WsgiToAsgi(app)
+@app.get("/accounts/history/{acc_num}")
+async def get_history(acc_num: str):
+    account = await db.account.find_unique(
+        where={'accountNumber': acc_num}, 
+        include={'transactions': True}
+    )
+    if not account:
+        raise HTTPException(status_code=404, detail="Account not found")
+    return {
+        "balance": account.balance, 
+        "history": sorted(account.transactions, key=lambda x: x.createdAt, reverse=True)
+    }
 
 if __name__ == "__main__":
     import uvicorn
-    # Use the ASGI app to allow async handling with Uvicorn on Port 5000
-    uvicorn.run("app:asgi_app", host="127.0.0.1", port=5000, reload=True)
+    # Use FastAPI instance directly
+    uvicorn.run(app, host="127.0.0.1", port=5000, reload=True)
