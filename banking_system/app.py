@@ -2,6 +2,7 @@ import traceback
 import cloudinary
 import cloudinary.uploader
 from fastapi import FastAPI, HTTPException, Request, UploadFile, File, Form, Depends
+from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from typing import Optional, List
 from pydantic import BaseModel
@@ -9,7 +10,7 @@ from db import db
 from utils import hash_password, verify_password, generate_account_number
 
 # Initialize FastAPI
-app = FastAPI(title="Anoop Industry Bank API", version="6.0.0-FastAPI")
+app = FastAPI(title="Anoop Industry Bank API", version="6.1.0-AlertSync")
 
 # --- 🛰️ CORS CONFIGURATION ---
 app.add_middleware(
@@ -21,7 +22,6 @@ app.add_middleware(
 )
 
 # --- ☁️ CLOUDINARY CONFIGURATION ---
-# Professional institutional hosting credentials
 cloudinary.config( 
     cloud_name = "dfsuat2el", 
     api_key = "811246744629417", 
@@ -29,20 +29,38 @@ cloudinary.config(
     secure = True
 )
 
+# --- 🛡️ GLOBAL ERROR HANDLER (Institutional Shield) ---
+@app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception):
+    """
+    Catches any 500 errors and returns a formatted JSON response
+    that triggers the InstitutionalAlert component on the frontend.
+    """
+    print(f"🚨 INTERNAL SYSTEM ERROR: {str(exc)}")
+    print(traceback.format_exc()) # Log to terminal for Anoop's debugging
+    
+    return JSONResponse(
+        status_code=500,
+        content={
+            "status": "error",
+            "type": "server_failure",
+            "message": "Institutional Vault encountered a sync error. Please retry shortly.",
+            "details": str(exc) if app.debug else "Secure audit logs recorded."
+        }
+    )
+
 # --- LIFECYCLE MANAGEMENT ---
 @app.on_event("startup")
 async def startup():
-    """Connect to Prisma on startup"""
     if not db.is_connected():
         await db.connect()
 
 @app.on_event("shutdown")
 async def shutdown():
-    """Disconnect from Prisma on shutdown"""
     if db.is_connected():
         await db.disconnect()
 
-# --- REQUEST MODELS (Pydantic Validation) ---
+# --- REQUEST MODELS ---
 class LoginRequest(BaseModel):
     email: str
     password: str
@@ -90,20 +108,16 @@ async def register(
     nomineeEmail: Optional[str] = Form(None),
     profileImage: Optional[UploadFile] = File(None)
 ):
-    """Handles detailed Enrollment with native Multipart support"""
     try:
-        # Verify Uniqueness
         existing_user = await db.user.find_unique(where={'email': email})
         if existing_user:
             raise HTTPException(status_code=400, detail="Email already registered")
 
-        # Cloudinary Upload
         image_url = None
         if profileImage:
             upload_result = cloudinary.uploader.upload(profileImage.file, folder="bank_kyc_profiles")
             image_url = upload_result.get('secure_url')
 
-        # Create Prisma Record
         full_name = fullName or f"{firstName or ''} {lastName or ''}".strip()
         user = await db.user.create(
             data={
@@ -131,9 +145,11 @@ async def register(
         )
         return {"message": "Vault Identity created", "user_id": user.id, "imageUrl": image_url}
         
+    except HTTPException:
+        raise
     except Exception as e:
-        print(traceback.format_exc())
-        raise HTTPException(status_code=500, detail=str(e))
+        # Caught by global_exception_handler
+        raise e
 
 @app.post("/login")
 async def login(req: LoginRequest):
@@ -195,5 +211,4 @@ async def get_history(acc_num: str):
 
 if __name__ == "__main__":
     import uvicorn
-    # Use FastAPI instance directly
     uvicorn.run(app, host="127.0.0.1", port=5000, reload=True)

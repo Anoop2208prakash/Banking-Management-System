@@ -1,0 +1,64 @@
+// src/components/InstitutionalAlert.scss
+
+.outlined-alert-box {
+  position: fixed;
+  top: 1.5rem;
+  right: 1.5rem;
+  min-width: 380px;
+  max-width: 500px;
+  z-index: 10000;
+  border-radius: 0.5rem;
+  background: rgba(15, 23, 42, 0.9); // Dark slate background
+  backdrop-filter: blur(8px);
+  padding: 1rem 1.25rem;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  transition: all 0.3s ease;
+
+  .alert-flex {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .alert-text-content {
+    flex: 1;
+    font-size: 0.9rem;
+    font-weight: 600;
+    margin: 0;
+    color: #f1f5f9; // Light text
+  }
+
+  .alert-dismiss-btn {
+    background: none;
+    border: none;
+    color: #64748b;
+    cursor: pointer;
+    padding: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    &:hover { background: rgba(255, 255, 255, 0.1); color: white; }
+  }
+
+  // --- Dynamic Outlined States ---
+  &.success {
+    border: 1px solid rgba(16, 185, 129, 0.6);
+    .alert-icon-wrapper { color: #10b981; }
+  }
+
+  &.info {
+    border: 1px solid rgba(59, 130, 246, 0.6);
+    .alert-icon-wrapper { color: #3b82f6; }
+  }
+
+  &.warning {
+    border: 1px solid rgba(245, 158, 11, 0.6);
+    .alert-icon-wrapper { color: #f59e0b; }
+  }
+
+  &.error {
+    border: 1px solid rgba(225, 29, 72, 0.6);
+    .alert-icon-wrapper { color: #e11d48; }
+  }
+}

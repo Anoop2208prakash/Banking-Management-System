@@ -1,14 +1,16 @@
 import { createBrowserRouter, Navigate } from 'react-router-dom';
-import Login from './components/Login';
 import Dashboard from './components/Dashboard';
-import Register from './components/Register';
 import AdminPanel from './pages/AdminPanel'; 
 import CustomerOnboarding from './pages/CustomerOnboarding';
-import MainLayout from './layouts/MainLayout'; // Newly created Layout
+import DepositPage from './pages/DepositPage'; // New Deposit Terminal
+import MainLayout from './layouts/MainLayout'; 
+import Login from './features/auth/Login';
+import Register from './features/auth/Register';
+import ForgotPassword from './features/auth/ForgotPassword';
 
 /**
  * ProtectedRoute Component
- * Prevents unauthenticated users from accessing the bank's internal pages.
+ * Prevents unauthenticated users from accessing internal vault pages.
  */
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const user = localStorage.getItem('user');
@@ -19,18 +21,16 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 };
 
 /**
- * AdminRoute Component
- * Strict role-gating for high-level operations.
- * Allows access for MANAGER and ACCOUNTANT roles.
+ * RoleRoute Component
+ * Flexible role-gating for different levels of institutional access.
  */
-const AdminRoute = ({ children }: { children: React.ReactNode }) => {
+const RoleRoute = ({ children, allowedRoles }: { children: React.ReactNode, allowedRoles: string[] }) => {
   const userStr = localStorage.getItem('user');
   if (!userStr) return <Navigate to="/" replace />;
   
   const user = JSON.parse(userStr);
-  const allowedRoles = ['MANAGER', 'ACCOUNTANT'];
-  
   if (!allowedRoles.includes(user.role)) {
+    // Redirect unauthorized users back to the safety of the Dashboard
     return <Navigate to="/dashboard" replace />;
   }
   
@@ -47,6 +47,10 @@ export const router = createBrowserRouter([
     path: "/register", 
     element: <Register /> 
   },
+  {
+    path: "/forgot-password",
+    element: <ForgotPassword />
+  },
 
   // --- 🏛️ Internal Banking Shell (Protected) ---
   {
@@ -60,20 +64,31 @@ export const router = createBrowserRouter([
         path: "/dashboard",
         element: <Dashboard />,
       },
+      // Restricted to staff who handle client identity creation
       {
         path: "/onboard",
         element: (
-          <AdminRoute>
+          <RoleRoute allowedRoles={['MANAGER', 'ACCOUNTANT', 'ADMIN']}>
             <CustomerOnboarding />
-          </AdminRoute>
+          </RoleRoute>
         ),
       },
+      // Restricted to high-level system oversight
       {
         path: "/admin",
         element: (
-          <AdminRoute>
+          <RoleRoute allowedRoles={['MANAGER', 'ADMIN']}>
             <AdminPanel />
-          </AdminRoute>
+          </RoleRoute>
+        ),
+      },
+      // New Deposit route accessible by Cashiers and Managers
+      {
+        path: "/deposit",
+        element: (
+          <RoleRoute allowedRoles={['CASHIER', 'MANAGER', 'ADMIN']}>
+            <DepositPage />
+          </RoleRoute>
         ),
       },
     ]
