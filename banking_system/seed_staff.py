@@ -16,7 +16,7 @@ async def create_staff_accounts():
             "email": "admin@anoopbank.com",
             "password": "Password123",
             "role": "ADMIN",
-            "aadharNo": "STAFF0001",
+            "aadharNo": "000000000001",
             "avatar": "https://res.cloudinary.com/dfsuat2el/image/upload/v1/bank_kyc_profiles/admin_default"
         },
         {
@@ -24,7 +24,7 @@ async def create_staff_accounts():
             "email": "manager@anoopbank.com",
             "password": "Password123",
             "role": "MANAGER",
-            "aadharNo": "STAFF0002",
+            "aadharNo": "000000000002",
             "avatar": "https://res.cloudinary.com/dfsuat2el/image/upload/v1/bank_kyc_profiles/manager_default"
         },
         {
@@ -32,7 +32,7 @@ async def create_staff_accounts():
             "email": "accountant@anoopbank.com",
             "password": "Password123",
             "role": "ACCOUNTANT",
-            "aadharNo": "STAFF0003",
+            "aadharNo": "000000000003",
             "avatar": "https://res.cloudinary.com/dfsuat2el/image/upload/v1/bank_kyc_profiles/staff_default"
         },
         {
@@ -40,7 +40,7 @@ async def create_staff_accounts():
             "email": "cashier@anoopbank.com",
             "password": "Password123",
             "role": "CASHIER",
-            "aadharNo": "STAFF0004",
+            "aadharNo": "000000000004",
             "avatar": "https://res.cloudinary.com/dfsuat2el/image/upload/v1/bank_kyc_profiles/staff_default"
         }
     ]

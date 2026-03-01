@@ -1,14 +1,12 @@
-// src/components/Sidebar.scss
-
-$slate-deep: #1e293b;
-$slate-primary: #334155;
-$accent-blue: #60a5fa;
-$white: #ffffff;
+$slate-deep: #020617; // Deep navy for banking
+$slate-primary: #0f172a;
+$accent-blue: #3b82f6;
+$white: #f8fafc;
 $glass-bg: rgba(255, 255, 255, 0.03);
 
 .sidebar-modern {
   width: 280px;
-  background: radial-gradient(circle at top left, $slate-primary, $slate-deep);
+  background: $slate-deep;
   color: $white;
   height: 100vh;
   display: flex;
@@ -16,12 +14,11 @@ $glass-bg: rgba(255, 255, 255, 0.03);
   padding: 2rem 1.25rem;
   position: sticky;
   top: 0;
-  border-right: 1px solid rgba(255, 255, 255, 0.05);
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
 
-  // --- Branding Area ---
   .sidebar-header {
-    margin-bottom: 3.5rem;
-    padding: 0 0.5rem;
+    margin-bottom: 2.5rem;
+    flex-shrink: 0; // 🛑 Prevents header from squishing
 
     .brand-wrap {
       display: flex;
@@ -30,135 +27,121 @@ $glass-bg: rgba(255, 255, 255, 0.03);
       cursor: pointer;
 
       .brand-logo {
-        width: 40px;
-        height: 40px;
-        background: linear-gradient(135deg, $accent-blue, #3b82f6);
-        border-radius: 12px;
+        width: 44px;
+        height: 44px;
+        background: linear-gradient(135deg, $accent-blue, #1d4ed8);
+        border-radius: 14px;
         display: flex;
         align-items: center;
         justify-content: center;
-        transform: rotate(45deg);
-        box-shadow: 0 8px 16px rgba(59, 130, 246, 0.3);
-
-        .inner-diamond {
-          width: 14px;
-          height: 14px;
-          border: 2px solid white;
-          transform: rotate(0deg);
-        }
+        box-shadow: 0 10px 20px rgba(59, 130, 246, 0.2);
+        transition: transform 0.3s;
+        &:hover { transform: rotate(5deg) scale(1.05); }
       }
 
       .brand-text {
-        display: flex;
-        flex-direction: column;
-        .main { font-weight: 900; font-size: 1.2rem; letter-spacing: 1px; }
-        .sub { font-size: 0.6rem; font-weight: 700; opacity: 0.5; text-transform: uppercase; letter-spacing: 2px; }
+        .main { font-weight: 900; font-size: 1.1rem; letter-spacing: 0.5px; }
+        .sub { font-size: 0.6rem; font-weight: 700; color: $accent-blue; opacity: 0.8; letter-spacing: 1.5px; }
       }
     }
   }
 
-  // --- Navigation Styling ---
-  .sidebar-nav {
+  // --- 📜 Scrollable Middle Section ---
+  .scroll-wrapper {
     flex: 1;
+    overflow-y: auto;
+    margin-right: -0.5rem;
+    padding-right: 0.5rem;
 
+    // Custom Scrollbar
+    &::-webkit-scrollbar { width: 4px; }
+    &::-webkit-scrollbar-track { background: transparent; }
+    &::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); border-radius: 10px; }
+    &:hover::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.2); }
+  }
+
+  .sidebar-nav {
     .nav-label {
-      font-size: 0.65rem;
+      font-size: 0.6rem;
       font-weight: 800;
+      color: rgba(255, 255, 255, 0.4);
+      margin-bottom: 1.25rem;
       text-transform: uppercase;
-      letter-spacing: 1.5px;
-      color: rgba(255, 255, 255, 0.3);
-      margin-bottom: 1.5rem;
-      padding-left: 1rem;
+      letter-spacing: 2px;
     }
 
     .nav-link {
       display: flex;
       align-items: center;
       gap: 1rem;
-      padding: 0.85rem 1.25rem;
-      border-radius: 1rem;
+      padding: 0.8rem 1rem;
+      border-radius: 0.75rem;
       color: rgba(255, 255, 255, 0.6);
       text-decoration: none;
       font-weight: 600;
-      font-size: 0.95rem;
       margin-bottom: 0.5rem;
-      position: relative;
-      transition: all 0.3s ease;
+      transition: all 0.2s;
 
-      .icon-wrap { font-size: 1.2rem; transition: transform 0.3s ease; }
-
-      &:hover {
-        background: $glass-bg;
-        color: $white;
-        .icon-wrap { transform: scale(1.1); }
-      }
+      &:hover { background: $glass-bg; color: white; }
 
       &.active {
-        color: $white;
-        background: rgba(255, 255, 255, 0.1);
-        backdrop-filter: blur(10px);
-
+        background: rgba(59, 130, 246, 0.1);
+        color: white;
         .icon-wrap { color: $accent-blue; }
-        
-        .active-pill {
-          position: absolute;
-          left: -4px;
-          width: 4px;
-          height: 20px;
-          background: $accent-blue;
-          border-radius: 0 4px 4px 0;
-          box-shadow: 0 0 10px $accent-blue;
-        }
+      }
+      
+      .active-pill {
+        position: absolute;
+        right: 0.5rem;
+        width: 6px;
+        height: 6px;
+        background: $accent-blue;
+        border-radius: 50%;
+        box-shadow: 0 0 10px $accent-blue;
       }
     }
   }
 
-  // --- Premium Footer ---
   .sidebar-footer {
-    padding-top: 2rem;
+    padding-top: 1.5rem;
+    flex-shrink: 0; // 🛑 Prevents footer from squishing
     border-top: 1px solid rgba(255, 255, 255, 0.05);
 
     .support-card {
-      background: $glass-bg;
+      background: linear-gradient(to bottom right, rgba(255, 255, 255, 0.03), transparent);
       border: 1px solid rgba(255, 255, 255, 0.05);
-      padding: 1.5rem;
-      border-radius: 1.5rem;
-      margin-bottom: 2rem;
+      padding: 1.25rem;
+      border-radius: 1.25rem;
       text-align: center;
-      transition: transform 0.3s ease;
+      margin-bottom: 1.5rem;
 
-      &:hover { transform: translateY(-5px); }
-
-      .support-icon { font-size: 1.8rem; color: $accent-blue; margin-bottom: 0.75rem; }
-      p { font-size: 0.8rem; font-weight: 700; margin-bottom: 1rem; }
+      .support-icon { font-size: 1.5rem; color: $accent-blue; margin-bottom: 0.5rem; }
+      p { font-size: 0.75rem; font-weight: 700; margin-bottom: 0.75rem; }
       button {
         width: 100%;
-        padding: 0.6rem;
-        background: $white;
-        color: $slate-deep;
+        padding: 0.5rem;
+        background: $accent-blue;
+        color: white;
         border: none;
-        border-radius: 0.8rem;
+        border-radius: 0.5rem;
         font-size: 0.7rem;
         font-weight: 800;
         cursor: pointer;
-        &:hover { background: $accent-blue; color: white; }
+        &:hover { background: #1d4ed8; }
       }
     }
 
     .logout-action {
       display: flex;
       align-items: center;
-      gap: 1rem;
+      gap: 0.75rem;
       width: 100%;
-      background: transparent;
+      background: none;
       border: none;
       color: #fca5a5;
       font-weight: 700;
-      font-size: 0.9rem;
-      padding: 0.75rem 1rem;
       cursor: pointer;
-      opacity: 0.7;
-      transition: opacity 0.3s;
+      opacity: 0.8;
       &:hover { opacity: 1; }
     }
   }

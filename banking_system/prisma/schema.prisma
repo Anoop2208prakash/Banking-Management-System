@@ -33,40 +33,39 @@ enum TransactionType {
 // --- MODELS ---
 
 model User {
-  id               String    @id @default(auto()) @map("_id") @db.ObjectId
-  email            String    @unique
-  fullName         String    // Required field for core identification
-  password         String    // Required field
-  role             Role      @default(CUSTOMER) // Required field
-  createdAt        DateTime  @default(now())
+  id              String    @id @default(auto()) @map("_id") @db.ObjectId
+  email           String    @unique
+  fullName        String    // Required field for core identification
+  password        String    // Required field
+  role            Role      @default(CUSTOMER) // Required field
+  createdAt       DateTime  @default(now())
 
   // --- Optional Client Details (For Customer Form) ---
-  // Fields marked with '?' allow staff accounts to remain minimal
-  firstName        String?
-  lastName         String?
-  phone            String?
-  aadharNo         String?   @unique // Still unique to prevent duplicate KYC
-  age              Int?
-  gender           String?
+  firstName       String?
+  lastName        String?
+  phone           String?
+  aadharNo        String?   @unique // Still unique to prevent duplicate KYC
+  age             Int?
+  gender          String?
   
   // --- Optional Location Details ---
-  address          String?
-  city             String?
-  landmark         String?
-  pincode          String?
-  state            String?
+  address         String?
+  city            String?
+  landmark        String?
+  pincode         String?
+  state           String?
   
-  // 📸 Stores the Cloudinary Secure URL (e.g., https://res.cloudinary.com/...)
-  clientSign       String?   
+  // 📸 Stores the Cloudinary Secure URL
+  clientSign      String?   
   
   // --- Optional Nominee Information ---
-  nomineeName      String?
-  nomineePhone     String?
-  nomineeAddress   String?
-  nomineeEmail     String?
-  nomineeSign      String?   
+  nomineeName     String?
+  nomineePhone    String?
+  nomineeAddress  String?
+  nomineeEmail    String?
+  nomineeSign     String?   
 
-  accounts         Account[]
+  accounts        Account[]
 }
 
 model Account {
@@ -88,4 +87,14 @@ model Transaction {
   accountId       String          @db.ObjectId
   account         Account         @relation(fields: [accountId], references: [id])
   processedBy     String?         // Audit field for staff tracking
+}
+
+// 🔒 INSTITUTIONAL SECURITY MODEL: OTP
+// Tracks temporary digital signatures for Vault Recovery & Enrollment.
+model Otp {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  email     String   @unique
+  code      String
+  expiresAt DateTime 
+  createdAt DateTime @default(now())
 }
