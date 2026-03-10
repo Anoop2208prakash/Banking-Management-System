@@ -1,0 +1,97 @@
+// Institutional Transaction Ledger
+
+$bg-slate: #f8fafc;
+$white: #ffffff;
+$navy-dark: #0f172a;
+$slate-600: #475569;
+$slate-400: #94a3b8;
+$border: #f1f5f9;
+
+// Status & Type Colors
+$emerald: #10b981; $emerald-light: #ecfdf5;
+$amber: #f59e0b;   $amber-light: #fffbeb;
+$rose: #ef4444;    $rose-light: #fef2f2;
+$indigo: #6366f1;  $indigo-light: #eef2ff;
+
+.transactions-root {
+  background: $bg-slate;
+  min-height: 100vh;
+  padding: 2.5rem;
+  font-family: 'Inter', sans-serif;
+
+  .transactions-header {
+    display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;
+    h1 { font-size: 1.6rem; font-weight: 700; color: $navy-dark; }
+    p { color: $slate-600; font-size: 0.9rem; margin-top: 0.2rem; }
+    
+    .export-btn {
+      background: $white; border: 1px solid $border; padding: 0.6rem 1.25rem;
+      border-radius: 8px; font-weight: 600; font-size: 0.85rem; display: flex; align-items: center; gap: 8px;
+      cursor: pointer; transition: 0.3s;
+      &:hover { background: #f1f5f9; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+    }
+  }
+
+  .ledger-card {
+    background: $white; border: 1px solid $border; border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05); overflow: hidden;
+
+    .ledger-toolbar {
+      padding: 1.5rem; border-bottom: 1px solid $border;
+      display: flex; justify-content: space-between; align-items: center; gap: 1.5rem;
+
+      .search-wrapper {
+        position: relative; flex: 1; max-width: 500px;
+        .search-icon { position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: $slate-400; }
+        input {
+          width: 100%; background: #f8fafc; border: 1px solid $border; padding: 0.65rem 1rem 0.65rem 2.8rem;
+          border-radius: 8px; font-size: 0.9rem; color: $navy-dark;
+          &::placeholder { color: $slate-400; }
+        }
+      }
+
+      .filter-scroll {
+        display: flex; gap: 8px; background: #f1f5f9; padding: 4px; border-radius: 10px;
+        .tab-btn {
+          border: none; padding: 0.5rem 1rem; border-radius: 8px; font-size: 0.8rem;
+          font-weight: 600; color: $slate-600; background: transparent; cursor: pointer;
+          &.active { background: #051124; color: white; }
+        }
+      }
+    }
+  }
+
+  .table-responsive {
+    overflow-x: auto;
+    .transaction-table {
+      width: 100%; border-collapse: collapse;
+      th { text-align: left; padding: 1.25rem 1.5rem; font-size: 0.75rem; color: $slate-400; text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px; }
+      td { padding: 1.25rem 1.5rem; border-bottom: 1px solid $border; vertical-align: middle; }
+    }
+  }
+
+  // --- Typography & Row Elements ---
+  .txn-id { font-weight: 600; color: $slate-600; font-size: 0.85rem; }
+  .path-text { font-size: 0.9rem; color: $slate-600; font-weight: 500; }
+  .amount-text { font-weight: 700; color: $navy-dark; font-size: 0.95rem; }
+  .date-text { font-size: 0.9rem; color: $slate-400; }
+
+  .type-cell {
+    display: flex; align-items: center; gap: 0.75rem;
+    .icon-ring {
+      width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+      &.transfer { background: $indigo-light; color: $indigo; }
+      &.deposit { background: $emerald-light; color: $emerald; }
+      &.withdrawal { background: $rose-light; color: $rose; }
+      &.upi, &.neft, &.imps { background: #eff6ff; color: #3b82f6; }
+    }
+    .type-label { font-size: 0.9rem; font-weight: 600; color: $navy-dark; }
+  }
+
+  .status-pill {
+    padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 700;
+    &.completed { background: $emerald-light; color: $emerald; }
+    &.pending { background: $amber-light; color: $amber; }
+    &.failed { background: $rose-light; color: $rose; }
+  }
+}

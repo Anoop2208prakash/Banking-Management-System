@@ -1,41 +1,45 @@
 import React from 'react';
-import { NavLink, useNavigate } from 'react-router-dom';
+import { NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { 
-  LuLayoutDashboard, LuUserPlus, LuUsers, LuShieldCheck, 
-  LuLogOut
-} from 'react-icons/lu'; // Switched to Lucide icons for a thinner, modern stroke
+  LuLayoutDashboard, LuUsers, LuWallet, LuArrowLeftRight, 
+  LuFileText, LuPiggyBank, LuSettings,
+  LuBell, LuLogOut, LuChevronLeft, LuLandmark
+} from 'react-icons/lu';
 import { motion } from 'framer-motion';
 import './Sidebar.scss';
 
 const Sidebar: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const user = JSON.parse(localStorage.getItem('user') || '{}');
 
   const menuItems = [
-    { name: 'Overview', icon: <LuLayoutDashboard />, path: '/dashboard', roles: ['ADMIN', 'MANAGER', 'ACCOUNTANT', 'CASHIER', 'CUSTOMER'] },
-    { name: 'Onboard Client', icon: <LuUserPlus />, path: '/onboard', roles: ['ACCOUNTANT', 'MANAGER'] },
-    { name: 'Staff Hub', icon: <LuUsers />, path: '/admin', roles: ['MANAGER', 'ADMIN'] },
-    { name: 'Security', icon: <LuShieldCheck />, path: '/security', roles: ['ADMIN', 'MANAGER', 'ACCOUNTANT', 'CASHIER', 'CUSTOMER'] },
+    { name: 'Dashboard', icon: <LuLayoutDashboard />, path: '/dashboard', roles: ['ADMIN', 'MANAGER', 'CUSTOMER'] },
+    { name: 'Customers', icon: <LuUsers />, path: '/customers', roles: ['ADMIN', 'MANAGER'] },
+    { name: 'Accounts', icon: <LuWallet />, path: '/accounts', roles: ['ADMIN', 'MANAGER', 'CUSTOMER'] },
+    { name: 'Transactions', icon: <LuArrowLeftRight />, path: '/transactions', roles: ['ADMIN', 'MANAGER', 'CUSTOMER'] },
+    { name: 'Loans', icon: <LuFileText />, path: '/loans', roles: ['ADMIN', 'MANAGER'] },
+    { name: 'Fixed Deposits', icon: <LuPiggyBank />, path: '/fixed-deposits', roles: ['ADMIN', 'MANAGER'] },
+    { name: 'Employees', icon: <LuSettings />, path: '/employees', roles: ['ADMIN'] },
+    { name: 'Reports', icon: <LuBell />, path: '/reports', roles: ['ADMIN', 'MANAGER'] },
+    { name: 'Notifications', icon: <LuBell />, path: '/notifications', roles: ['ADMIN', 'MANAGER', 'CUSTOMER'] },
   ];
 
   return (
-    <aside className="sidebar-modern">
-      {/* 🏛️ Premium Branding */}
+    <aside className="securbank-sidebar">
+      {/* 🏛️ SecurBank Branding */}
       <div className="sidebar-header">
-        <div className="brand-wrap" onClick={() => navigate('/dashboard')}>
+        <div className="brand-box" onClick={() => navigate('/dashboard')}>
           <div className="brand-logo">
-            <div className="inner-diamond"></div>
+            <LuLandmark size={24} />
           </div>
-          <div className="brand-text">
-            <span className="main">ABC BANK</span>
-            <span className="sub">INSTITUTIONAL</span>
-          </div>
+          <span className="brand-name">SecurBank</span>
         </div>
+        {user.role === 'ADMIN' && <div className="admin-badge">ADMIN</div>}
       </div>
 
-      {/* 🚦 Navigation with Motion */}
-      <nav className="sidebar-nav">
-        <div className="nav-label">Main Menu</div>
+      {/* 🚦 Navigation */}
+      <nav className="sidebar-nav custom-scrollbar">
         {menuItems
           .filter(item => item.roles.includes(user.role))
           .map((item) => (
@@ -47,27 +51,36 @@ const Sidebar: React.FC = () => {
               <span className="icon-wrap">{item.icon}</span>
               <span className="label">{item.name}</span>
               {location.pathname === item.path && (
-                <motion.div layoutId="active-pill" className="active-pill" />
+                <motion.div layoutId="nav-indicator" className="nav-indicator" />
               )}
             </NavLink>
           ))}
       </nav>
 
-      {/* 🛠️ Modern Footer with Assistance Card */}
+      {/* 👤 Profile Section */}
       <div className="sidebar-footer">
-        <div className="support-card">
-          {/* <LuHelpingHand className="support-icon" /> */}
-          <p>Need assistance?</p>
-          <button onClick={() => window.open('https://anoop-prakash.com')}>Contact Dev</button>
+        <div className="user-profile">
+          <div className="avatar-circle">
+            {user.name?.charAt(0) || 'R'}
+          </div>
+          <div className="user-info">
+            <span className="name">{user.name || 'Rajesh Kumar'}</span>
+            <span className="role">{user.role?.toLowerCase() || 'admin'}</span>
+          </div>
         </div>
         
-        <button 
-          onClick={() => { localStorage.clear(); navigate('/'); }} 
-          className="logout-action"
-        >
-          <LuLogOut />
-          <span>Terminate Session</span>
-        </button>
+        <div className="footer-actions">
+          <button 
+            onClick={() => { localStorage.clear(); navigate('/'); }} 
+            className="logout-btn"
+          >
+            <LuLogOut size={18} />
+            <span>Logout</span>
+          </button>
+          <button className="collapse-btn">
+            <LuChevronLeft size={18} />
+          </button>
+        </div>
       </div>
     </aside>
   );

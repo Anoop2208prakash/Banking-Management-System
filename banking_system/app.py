@@ -1,6 +1,9 @@
 import traceback
 import cloudinary
 import cloudinary.uploader
+import os
+import random
+from datetime import datetime, timedelta
 from fastapi import FastAPI, HTTPException, Request, UploadFile, File, Form, Depends
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
@@ -10,7 +13,7 @@ from db import db
 from utils import hash_password, verify_password, generate_account_number
 
 # Initialize FastAPI
-app = FastAPI(title="Anoop Industry Bank API", version="6.1.0-AlertSync")
+app = FastAPI(title="Anoop Industry Bank API", version="6.6.0-EmailJS-Sync")
 
 # --- 🛰️ CORS CONFIGURATION ---
 app.add_middleware(
@@ -23,28 +26,23 @@ app.add_middleware(
 
 # --- ☁️ CLOUDINARY CONFIGURATION ---
 cloudinary.config( 
-    cloud_name = "dfsuat2el", 
-    api_key = "811246744629417", 
-    api_secret = "__akJozJOJXD4nHKB7rFG3EsZzY",
+    cloud_name = os.environ.get("CLOUDINARY_CLOUD_NAME", "dfsuat2el"), 
+    api_key = os.environ.get("CLOUDINARY_API_KEY", "811246744629417"), 
+    api_secret = os.environ.get("CLOUDINARY_API_SECRET", "__akJozJOJXD4nHKB7rFG3EsZzY"),
     secure = True
 )
 
-# --- 🛡️ GLOBAL ERROR HANDLER (Institutional Shield) ---
+# --- 🛡️ GLOBAL ERROR HANDLER ---
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):
-    """
-    Catches any 500 errors and returns a formatted JSON response
-    that triggers the InstitutionalAlert component on the frontend.
-    """
     print(f"🚨 INTERNAL SYSTEM ERROR: {str(exc)}")
-    print(traceback.format_exc()) # Log to terminal for Anoop's debugging
-    
+    print(traceback.format_exc())
     return JSONResponse(
         status_code=500,
         content={
             "status": "error",
             "type": "server_failure",
-            "message": "Institutional Vault encountered a sync error. Please retry shortly.",
+            "message": "Institutional Vault encountered a sync error.",
             "details": str(exc) if app.debug else "Secure audit logs recorded."
         }
     )
@@ -65,6 +63,14 @@ class LoginRequest(BaseModel):
     email: str
     password: str
 
+class StoreOTPRequest(BaseModel): # New for EmailJS Sync
+    email: str
+    otp: str
+
+class VerifyOTPRequest(BaseModel):
+    email: str
+    otp: str
+
 class AccountOpenRequest(BaseModel):
     userId: str
     type: str = "SAVINGS"
@@ -74,16 +80,88 @@ class TransactionRequest(BaseModel):
     amount: float
     staffId: Optional[str] = None
 
+class UpdateUserRequest(BaseModel):
+    fullName: Optional[str] = None
+    phone: Optional[str] = None
+    role: Optional[str] = None
+    address: Optional[str] = None
+
 # --- SYSTEM ROUTES ---
 @app.get("/")
 async def home():
     return {
         "status": "Anoop Industry Bank API is active", 
-        "engine": "FastAPI + Uvicorn",
+        "engine": "FastAPI + EmailJS + MongoDB",
         "owner": "Anoop Prakash"
     }
 
-# --- 🏦 ENROLLMENT & AUTHENTICATION ---
+# --- 🏦 AUTHENTICATION & SECURE OTP PROTOCOLS ---
+
+@app.post("/auth/store-otp") # Replaces recover-vault for EmailJS
+async def store_otp(req: StoreOTPRequest):
+    """Anchors the frontend-generated OTP into the secure ledger."""
+    try:
+        expiry_time = datetime.utcnow() + timedelta(minutes=5)
+        await db.otp.upsert(
+            where={'email': req.email},
+            data={
+                'create': {'email': req.email, 'code': req.otp, 'expiresAt': expiry_time},
+                'update': {'code': req.otp, 'expiresAt': expiry_time}
+            }
+        )
+        return {"message": "OTP synced to vault ledger"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail="Vault storage failure")
+
+@app.post("/auth/verify-otp")
+async def verify_otp(req: VerifyOTPRequest):
+    stored_otp = await db.otp.find_unique(where={'email': req.email})
+    if not stored_otp or stored_otp.code != req.otp:
+        raise HTTPException(status_code=401, detail="Invalid Security Key")
+    
+    if datetime.utcnow() > stored_otp.expiresAt:
+        await db.otp.delete(where={'email': req.email})
+        raise HTTPException(status_code=401, detail="Security Key has expired")
+
+    await db.otp.delete(where={'email': req.email})
+    return {"status": "verified", "message": "Access Granted"}
+
+# --- 👥 CUSTOMER MANAGEMENT SUITE ---
+
+@app.get("/users/customers")
+async def get_all_customers():
+    return await db.user.find_many(where={'role': 'CUSTOMER'})
+
+@app.get("/users/{user_id}")
+async def get_user_by_id(user_id: str):
+    user = await db.user.find_unique(where={'id': user_id})
+    if not user:
+        raise HTTPException(status_code=404, detail="Identity not found")
+    return user
+
+@app.get("/users/profile/{user_id}")
+async def get_full_profile(user_id: str):
+    user = await db.user.find_unique(where={'id': user_id}, include={'accounts': True})
+    if not user:
+        raise HTTPException(status_code=404, detail="Identity not found")
+    
+    all_tx = []
+    for acc in user.accounts:
+        acc_with_tx = await db.account.find_unique(where={'id': acc.id}, include={'transactions': True})
+        all_tx.extend(acc_with_tx.transactions)
+    
+    return {
+        "user": user, 
+        "accounts": user.accounts, 
+        "transactions": sorted(all_tx, key=lambda x: x.createdAt, reverse=True)
+    }
+
+@app.put("/users/update/{user_id}")
+async def update_user(user_id: str, req: UpdateUserRequest):
+    return await db.user.update(
+        where={'id': user_id},
+        data={k: v for k, v in req.dict().items() if v is not None}
+    )
 
 @app.post("/register", status_code=201)
 async def register(
@@ -98,14 +176,6 @@ async def register(
     age: Optional[int] = Form(None),
     gender: Optional[str] = Form(None),
     address: Optional[str] = Form(None),
-    city: Optional[str] = Form(None),
-    landmark: Optional[str] = Form(None),
-    pincode: Optional[str] = Form(None),
-    state: Optional[str] = Form(None),
-    nomineeName: Optional[str] = Form(None),
-    nomineePhone: Optional[str] = Form(None),
-    nomineeAddress: Optional[str] = Form(None),
-    nomineeEmail: Optional[str] = Form(None),
     profileImage: Optional[UploadFile] = File(None)
 ):
     try:
@@ -125,30 +195,25 @@ async def register(
                 "password": hash_password(password),
                 "fullName": full_name,
                 "role": role,
-                "firstName": firstName,
-                "lastName": lastName,
                 "phone": phone,
                 "aadharNo": aadharNo,
-                "age": age,
-                "gender": gender,
                 "address": address,
-                "city": city,
-                "landmark": landmark,
-                "pincode": pincode,
-                "state": state,
-                "nomineeName": nomineeName,
-                "nomineePhone": nomineePhone,
-                "nomineeAddress": nomineeAddress,
-                "nomineeEmail": nomineeEmail,
                 "clientSign": image_url 
             }
         )
-        return {"message": "Vault Identity created", "user_id": user.id, "imageUrl": image_url}
         
-    except HTTPException:
-        raise
+        # 🏦 Automatic Account Generation
+        new_acc = await db.account.create(
+            data={
+                "accountNumber": generate_account_number(),
+                "accountType": "SAVINGS",
+                "balance": 0.0,
+                "userId": user.id
+            }
+        )
+        
+        return {"message": "Vault Identity & Ledger Created", "user_id": user.id, "accountNumber": new_acc.accountNumber}
     except Exception as e:
-        # Caught by global_exception_handler
         raise e
 
 @app.post("/login")
@@ -157,16 +222,11 @@ async def login(req: LoginRequest):
     if user and verify_password(req.password, user.password):
         return {
             "message": "Login successful",
-            "user": {
-                "id": user.id, 
-                "name": user.fullName, 
-                "role": user.role,
-                "profileImage": user.clientSign 
-            }
+            "user": {"id": user.id, "name": user.fullName, "role": user.role, "profileImage": user.clientSign}
         }
     raise HTTPException(status_code=401, detail="Invalid credentials")
 
-# --- BANKING OPERATIONS ---
+# --- 💸 BANKING OPERATIONS ---
 
 @app.post("/accounts/open", status_code=201)
 async def open_account(req: AccountOpenRequest):
@@ -187,27 +247,16 @@ async def deposit(req: TransactionRequest):
         data={'balance': {'increment': req.amount}}
     )
     await db.transaction.create(
-        data={
-            "amount": req.amount, 
-            "transactionType": "DEPOSIT",
-            "accountId": account.id,
-            "processedBy": req.staffId
-        }
+        data={"amount": req.amount, "transactionType": "DEPOSIT", "accountId": account.id, "processedBy": req.staffId}
     )
     return {"message": "Deposit synced", "newBalance": account.balance}
 
 @app.get("/accounts/history/{acc_num}")
 async def get_history(acc_num: str):
-    account = await db.account.find_unique(
-        where={'accountNumber': acc_num}, 
-        include={'transactions': True}
-    )
+    account = await db.account.find_unique(where={'accountNumber': acc_num}, include={'transactions': True})
     if not account:
         raise HTTPException(status_code=404, detail="Account not found")
-    return {
-        "balance": account.balance, 
-        "history": sorted(account.transactions, key=lambda x: x.createdAt, reverse=True)
-    }
+    return {"balance": account.balance, "history": sorted(account.transactions, key=lambda x: x.createdAt, reverse=True)}
 
 if __name__ == "__main__":
     import uvicorn

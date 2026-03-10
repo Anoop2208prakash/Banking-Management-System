@@ -1,0 +1,60 @@
+$navy-dark: #0a1931;
+$white: #ffffff;
+$slate-100: #f1f5f9;
+$slate-400: #94a3b8;
+$slate-600: #475569;
+$border: #e2e8f0;
+
+.modal-overlay {
+  position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0, 0, 0, 0.4); backdrop-filter: blur(4px);
+  display: flex; align-items: center; justify-content: center; z-index: 2000;
+}
+
+.add-customer-modal {
+  background: $white; width: 850px; border-radius: 16px; 
+  box-shadow: 0 20px 40px rgba(0,0,0,0.2); display: flex; flex-direction: column;
+  max-height: 90vh;
+
+  .modal-header {
+    padding: 1.5rem 2rem; border-bottom: 1px solid $border;
+    display: flex; justify-content: space-between; align-items: center;
+    h2 { font-size: 1.25rem; font-weight: 700; color: #1e293b; }
+    .close-btn { background: none; border: none; font-size: 1.25rem; cursor: pointer; color: $slate-400; }
+  }
+
+  .step-nav {
+    display: flex; gap: 4px; padding: 1rem 2rem; background: #f8fafc;
+    .step-tab {
+      flex: 1; padding: 0.75rem; border: none; background: transparent;
+      color: $slate-400; font-weight: 600; font-size: 0.85rem; border-radius: 8px;
+      cursor: pointer; transition: 0.3s;
+      &.active { background: white; color: $navy-dark; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+    }
+  }
+
+  .form-body {
+    padding: 2rem; overflow-y: auto;
+    .form-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;
+      .input-group {
+        display: flex; flex-direction: column; gap: 8px;
+        &.full { grid-column: span 2; }
+        label { font-size: 0.85rem; font-weight: 600; color: #334155; .req { color: #ef4444; } }
+        input, select, textarea {
+          padding: 0.75rem 1rem; border: 1px solid $border; border-radius: 8px;
+          font-size: 0.9rem; background: #f8fafc; color: #1e293b;
+          &:focus { outline: none; border-color: $navy-dark; background: white; }
+          &:disabled { opacity: 0.6; cursor: not-allowed; }
+        }
+      }
+    }
+  }
+
+  .modal-footer {
+    padding: 1.5rem 2rem; border-top: 1px solid $border;
+    display: flex; justify-content: flex-end; gap: 1rem;
+    .btn-prev { background: $slate-100; border: none; padding: 0.75rem 1.5rem; border-radius: 8px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; }
+    .btn-next { background: $navy-dark; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 8px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; }
+  }
+}

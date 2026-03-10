@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { 
-  LuUsers, LuSearch, LuShieldAlert, LuTrendingUp, 
-  LuFilter, LuDownload, LuFileCheck 
+import {
+  LuUsers, LuSearch, LuShieldAlert, LuTrendingUp,
+  LuFilter, LuDownload, LuFileCheck
 } from 'react-icons/lu';
 import { motion, AnimatePresence } from 'framer-motion';
 import './AdminPanel.scss';
@@ -28,7 +28,7 @@ const API_BASE = "http://127.0.0.1:5000";
 
 const AdminPanel: React.FC = () => {
   const [users, setUsers] = useState<User[]>([]);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState(''); 
   const [loading, setLoading] = useState(true);
 
   const fetchUsers = async () => {
@@ -36,7 +36,7 @@ const AdminPanel: React.FC = () => {
       const res = await axios.get(`${API_BASE}/admin/users`);
       setUsers(res.data);
     } catch (err) {
-      console.error("Failed to fetch bank registry. Ensure Uvicorn is active at port 5000");
+      console.error("Failed to fetch bank registry. Ensure Unicorn is active at port 5000");
     } finally {
       setLoading(false);
     }
@@ -138,8 +138,8 @@ const AdminPanel: React.FC = () => {
                     <td>
                       <div className="user-profile-cell">
                         <img 
-                          src={u.profileImage || `https://ui-avatars.com/api/?name=${u.fullName}&background=f1f5f9&color=64748b`} 
-                          alt="avatar" 
+                          src={u.profileImage || `https://ui-avatars.com/api/?name=${u.fullName}&background=f1f5f9&color=64748b`}
+                          alt="avatar"
                         />
                         <div className="user-text">
                           <p className="name">{u.fullName}</p>

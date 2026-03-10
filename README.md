@@ -115,3 +115,8 @@ For technical queries regarding the Cloudinary integration or Prisma migrations,
 **Would you like me to help you create a `seed_database.py` script that evaluators can run to instantly populate the bank with 10 dummy customers and their transaction histories?**
 
 ```
+
+npx prisma@5.17.0 db push
+npx prisma@5.17.0 generate
+pip install fastapi uvicorn prisma cloudinary resend pydantic python-multipart
+pip install werkzeug

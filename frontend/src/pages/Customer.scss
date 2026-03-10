@@ -1,0 +1,93 @@
+// Institutional Customer Module
+
+$bg-main: #f8fafc;
+$white: #ffffff;
+$navy: #0f172a;
+$slate-600: #475569;
+$slate-400: #94a3b8;
+$border: #f1f5f9;
+
+// Status Colors
+$green-bg: #ecfdf5; $green-text: #10b981;
+$amber-bg: #fffbeb; $amber-text: #f59e0b;
+$red-bg: #fef2f2; $red-text: #ef4444;
+
+.customer-root {
+  background: $bg-main;
+  min-height: 100vh;
+  padding: 2.5rem;
+  font-family: 'Inter', sans-serif;
+
+  .customer-header {
+    display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;
+    h1 { font-size: 1.6rem; font-weight: 700; color: $navy; }
+    p { color: $slate-600; font-size: 0.9rem; margin-top: 0.2rem; }
+    
+    .add-btn {
+      background: $navy; color: white; border: none; padding: 0.7rem 1.25rem;
+      border-radius: 8px; font-weight: 600; display: flex; align-items: center; gap: 8px;
+      cursor: pointer; transition: 0.3s;
+      &:hover { filter: brightness(1.2); }
+    }
+  }
+
+  .table-container {
+    background: $white; border: 1px solid $border; border-radius: 16px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05); padding-top: 1.5rem;
+
+    .table-controls {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 0 1.5rem 1.5rem; border-bottom: 1px solid $border;
+      
+      .search-wrapper {
+        position: relative; flex: 1; max-width: 600px;
+        .search-icon { position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: $slate-400; }
+        input {
+          width: 100%; background: #f8fafc; border: 1px solid $border; padding: 0.7rem 1rem 0.7rem 2.8rem;
+          border-radius: 10px; font-size: 0.9rem; color: $navy;
+          &::placeholder { color: $slate-400; }
+        }
+      }
+
+      .filter-tabs {
+        display: flex; background: #f1f5f9; padding: 4px; border-radius: 10px; margin-left: 1.5rem;
+        .tab {
+          border: none; padding: 0.5rem 1.2rem; border-radius: 8px; font-size: 0.85rem;
+          font-weight: 600; color: $slate-600; background: transparent; cursor: pointer;
+          &.active { background: #051124; color: white; }
+        }
+      }
+    }
+  }
+
+  .customer-table-wrapper {
+    overflow-x: auto;
+    .customer-table {
+      width: 100%; border-collapse: collapse;
+      th { text-align: left; padding: 1.25rem 1.5rem; font-size: 0.75rem; color: $slate-400; text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px; }
+      td { padding: 1.25rem 1.5rem; border-bottom: 1px solid $border; vertical-align: middle; }
+    }
+  }
+
+  .customer-info {
+    display: flex; align-items: center; gap: 1rem;
+    .avatar { width: 40px; height: 40px; background: #e2e8f0; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; color: $navy; }
+    .name { font-weight: 600; color: $navy; font-size: 0.95rem; }
+    .dob { font-size: 0.75rem; color: $slate-400; }
+  }
+
+  .account-text { font-weight: 500; color: $navy; font-size: 0.9rem; }
+  .contact-info { .email { font-size: 0.85rem; color: $navy; } .phone { font-size: 0.75rem; color: $slate-400; } }
+
+  .badge {
+    padding: 4px 12px; border-radius: 6px; font-size: 0.75rem; font-weight: 600; text-transform: lowercase;
+    &.kyc-verified { background: $green-bg; color: $green-text; }
+    &.kyc-pending { background: $amber-bg; color: $amber-text; }
+    &.kyc-rejected { background: $red-bg; color: $red-text; }
+    &.status-active { background: $green-bg; color: $green-text; }
+    &.status-pending { background: $amber-bg; color: $amber-text; }
+    &.status-inactive { background: $red-bg; color: $red-text; }
+  }
+
+  .action-icon-btn { background: transparent; border: none; color: $slate-400; cursor: pointer; transition: 0.3s; &:hover { color: $navy; } }
+}

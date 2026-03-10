@@ -2,11 +2,16 @@ import { createBrowserRouter, Navigate } from 'react-router-dom';
 import Dashboard from './components/Dashboard';
 import AdminPanel from './pages/AdminPanel'; 
 import CustomerOnboarding from './pages/CustomerOnboarding';
-import DepositPage from './pages/DepositPage'; // New Deposit Terminal
+import DepositPage from './pages/DepositPage'; 
 import MainLayout from './layouts/MainLayout'; 
 import Login from './features/auth/Login';
 import Register from './features/auth/Register';
 import ForgotPassword from './features/auth/ForgotPassword';
+import Customer from './pages/Customer';
+import Account from './pages/Account'; // 🛡️ Import the new Accounts Ledger
+import Transactions from './pages/Transactions';
+import Loan from './pages/Loan';
+import FixDeposit from './pages/FixDeposit';
 
 /**
  * ProtectedRoute Component
@@ -63,6 +68,35 @@ export const router = createBrowserRouter([
       {
         path: "/dashboard",
         element: <Dashboard />,
+      },
+      {
+        path: "/customers",
+        element: <Customer />,
+      },
+      {
+        path: "/accounts",
+        element: (
+          <RoleRoute allowedRoles={['ADMIN', 'MANAGER', 'ACCOUNTANT']}>
+            <Account />
+          </RoleRoute>
+        ),
+      },
+
+      {
+        path: "/transactions",
+        element: <Transactions />,
+      },
+      {
+        path: "/loans",
+        element: <Loan />,
+      },
+      {
+        path: "/fixed-deposits",
+        element: (
+          <RoleRoute allowedRoles={['CASHIER', 'MANAGER', 'ADMIN']}>
+            <FixDeposit />
+          </RoleRoute>
+        ),
       },
       // Restricted to staff who handle client identity creation
       {

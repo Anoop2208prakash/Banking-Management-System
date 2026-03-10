@@ -1,0 +1,140 @@
+// Institutional Ledger Init Styling
+
+$navy-secur: #0a1931; // Primary Navy
+$white: #ffffff;
+$slate-50: #f8fafc;
+$slate-100: #f1f5f9;
+$slate-400: #94a3b8;
+$slate-600: #475569;
+$emerald: #10b981;
+$border: #e2e8f0;
+
+.open-account-modal {
+  background: $white; 
+  width: 850px; 
+  border-radius: 12px;
+  display: flex; 
+  flex-direction: column; 
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+
+  .modal-header {
+    padding: 1.5rem 2.5rem; 
+    border-bottom: 1px solid $border;
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center;
+
+    .title-area {
+      h2 { font-size: 1.25rem; font-weight: 700; color: #1e293b; margin: 0; }
+      .form-id { font-size: 0.75rem; color: $slate-400; font-weight: 600; text-transform: uppercase; margin-top: 2px; display: block; }
+    }
+  }
+
+  // --- 🚦 Stepper Tabs (Match: image_1a41fc.png) ---
+  .step-nav {
+    display: flex; 
+    gap: 8px; 
+    padding: 1rem 2.5rem; 
+    background: $slate-50;
+
+    .step-btn {
+      flex: 1; 
+      padding: 0.75rem; 
+      border: none; 
+      background: transparent;
+      color: $slate-400; 
+      font-weight: 600; 
+      font-size: 0.85rem; 
+      border-radius: 8px;
+      cursor: pointer; 
+      transition: 0.2s;
+      
+      &.active { 
+        background: white; 
+        color: $navy-secur; 
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1); 
+      }
+    }
+  }
+
+  .form-body {
+    padding: 2rem 2.5rem; 
+    max-height: 60vh; 
+    overflow-y: auto;
+
+    // --- Identification Layout ---
+    .full-search-group {
+      margin-bottom: 2rem;
+      label { font-size: 0.9rem; font-weight: 600; color: #334155; margin-bottom: 8px; display: block; }
+      .search-input-wrap {
+        display: flex; gap: 12px;
+        input { flex: 1; padding: 0.8rem 1rem; border: 1px solid $border; border-radius: 8px; font-size: 0.95rem; }
+        .verify-btn { 
+          background: $navy-secur; color: white; border: none; padding: 0 1.5rem; 
+          border-radius: 8px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px;
+          &:hover { filter: brightness(1.2); }
+        }
+      }
+    }
+
+    .result-grid, .form-grid {
+      display: grid; 
+      grid-template-columns: 1fr 1fr; 
+      gap: 1.5rem;
+      &.visible { opacity: 1; } // Handle transition if needed
+
+      .field-box {
+        display: flex; flex-direction: column; gap: 8px;
+        &.full { grid-column: span 2; }
+        label { font-size: 0.85rem; font-weight: 600; color: #475569; }
+        input, select { 
+          padding: 0.75rem 1rem; border: 1px solid $border; border-radius: 8px; 
+          background: #fcfdfe; font-size: 0.9rem; color: #1e293b;
+          &:disabled { background: #f1f5f9; color: $slate-600; cursor: not-allowed; }
+        }
+        .date-input {
+          position: relative;
+          input { width: 100%; }
+          .icon { position: absolute; right: 1rem; top: 50%; transform: translateY(-50%); color: $slate-400; }
+        }
+      }
+    }
+
+    .kyc-vault-check {
+      background: $slate-50; border: 1px dashed $border; border-radius: 12px; padding: 1.5rem;
+      .integrity-card { 
+        display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem;
+        .shield { color: $emerald; }
+        h4 { font-weight: 700; color: $navy-secur; }
+        p { font-size: 0.8rem; color: $slate-600; }
+      }
+      .kyc-list {
+        .kyc-row { 
+          display: flex; justify-content: space-between; font-size: 0.9rem; padding: 0.6rem 0; 
+          border-bottom: 1px solid #eef2f6; 
+          .v-tag { color: $emerald; } 
+        }
+      }
+    }
+  }
+
+  .modal-footer {
+    padding: 1.5rem 2.5rem; 
+    border-top: 1px solid $border; 
+    display: flex; 
+    justify-content: flex-end; 
+    gap: 1rem;
+
+    .prev-pill { 
+      background: $slate-100; border: none; padding: 0.7rem 1.5rem; border-radius: 8px; 
+      font-weight: 600; color: $slate-600; cursor: pointer;
+    }
+    
+    .next-pill { 
+      background: $navy-secur; color: white; border: none; padding: 0.7rem 1.5rem; border-radius: 8px; 
+      font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px;
+      &:hover { filter: brightness(1.2); }
+    }
+  }
+}

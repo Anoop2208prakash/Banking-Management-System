@@ -1,165 +1,165 @@
-// src/components/Sidebar.scss
+// SecurBank Institutional Sidebar
 
-$slate-deep: #1e293b;
-$slate-primary: #334155;
-$accent-blue: #60a5fa;
+$navy-deep: #051124; // Deep navy background
+$navy-light: rgba(255, 255, 255, 0.08);
+$emerald: #10b981;   // Logo & Highlight green
+$text-dim: #94a3b8;
 $white: #ffffff;
-$glass-bg: rgba(255, 255, 255, 0.03);
 
-.sidebar-modern {
-  width: 280px;
-  background: radial-gradient(circle at top left, $slate-primary, $slate-deep);
-  color: $white;
+.securbank-sidebar {
+  width: 260px;
+  background: $navy-deep;
   height: 100vh;
   display: flex;
   flex-direction: column;
-  padding: 2rem 1.25rem;
+  color: $white;
   position: sticky;
   top: 0;
   border-right: 1px solid rgba(255, 255, 255, 0.05);
 
-  // --- Branding Area ---
   .sidebar-header {
-    margin-bottom: 3.5rem;
-    padding: 0 0.5rem;
-
-    .brand-wrap {
+    padding: 2rem 1.5rem;
+    
+    .brand-box {
       display: flex;
       align-items: center;
-      gap: 1rem;
+      gap: 12px;
       cursor: pointer;
+      margin-bottom: 1.5rem;
 
       .brand-logo {
-        width: 40px;
-        height: 40px;
-        background: linear-gradient(135deg, $accent-blue, #3b82f6);
+        background: $emerald;
+        padding: 10px;
         border-radius: 12px;
         display: flex;
         align-items: center;
         justify-content: center;
-        transform: rotate(45deg);
-        box-shadow: 0 8px 16px rgba(59, 130, 246, 0.3);
-
-        .inner-diamond {
-          width: 14px;
-          height: 14px;
-          border: 2px solid white;
-          transform: rotate(0deg);
-        }
+        color: white;
       }
 
-      .brand-text {
-        display: flex;
-        flex-direction: column;
-        .main { font-weight: 900; font-size: 1.2rem; letter-spacing: 1px; }
-        .sub { font-size: 0.6rem; font-weight: 700; opacity: 0.5; text-transform: uppercase; letter-spacing: 2px; }
+      .brand-name {
+        font-size: 1.4rem;
+        font-weight: 700;
+        letter-spacing: -0.5px;
       }
+    }
+
+    .admin-badge {
+      display: inline-block;
+      background: #450a0a; // Deep red as seen in image
+      color: #f87171;
+      font-size: 0.65rem;
+      font-weight: 800;
+      padding: 4px 10px;
+      border-radius: 20px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
     }
   }
 
-  // --- Navigation Styling ---
   .sidebar-nav {
     flex: 1;
-
-    .nav-label {
-      font-size: 0.65rem;
-      font-weight: 800;
-      text-transform: uppercase;
-      letter-spacing: 1.5px;
-      color: rgba(255, 255, 255, 0.3);
-      margin-bottom: 1.5rem;
-      padding-left: 1rem;
-    }
+    padding: 0 0.75rem;
+    overflow-y: auto;
 
     .nav-link {
       display: flex;
       align-items: center;
-      gap: 1rem;
-      padding: 0.85rem 1.25rem;
-      border-radius: 1rem;
-      color: rgba(255, 255, 255, 0.6);
+      gap: 14px;
+      padding: 0.85rem 1rem;
+      color: $text-dim;
       text-decoration: none;
-      font-weight: 600;
       font-size: 0.95rem;
-      margin-bottom: 0.5rem;
+      font-weight: 500;
+      border-radius: 10px;
+      transition: all 0.2s ease;
       position: relative;
-      transition: all 0.3s ease;
 
-      .icon-wrap { font-size: 1.2rem; transition: transform 0.3s ease; }
+      .icon-wrap { font-size: 1.2rem; opacity: 0.7; }
 
       &:hover {
-        background: $glass-bg;
-        color: $white;
-        .icon-wrap { transform: scale(1.1); }
+        background: $navy-light;
+        color: white;
       }
 
       &.active {
-        color: $white;
-        background: rgba(255, 255, 255, 0.1);
-        backdrop-filter: blur(10px);
-
-        .icon-wrap { color: $accent-blue; }
+        background: rgba(59, 130, 246, 0.15); // Indigo active state
+        color: white;
         
-        .active-pill {
+        .icon-wrap { opacity: 1; }
+
+        .nav-indicator {
           position: absolute;
           left: -4px;
           width: 4px;
-          height: 20px;
-          background: $accent-blue;
+          height: 24px;
+          background: #3b82f6;
           border-radius: 0 4px 4px 0;
-          box-shadow: 0 0 10px $accent-blue;
         }
       }
     }
   }
 
-  // --- Premium Footer ---
   .sidebar-footer {
-    padding-top: 2rem;
+    padding: 1.5rem;
     border-top: 1px solid rgba(255, 255, 255, 0.05);
 
-    .support-card {
-      background: $glass-bg;
-      border: 1px solid rgba(255, 255, 255, 0.05);
-      padding: 1.5rem;
-      border-radius: 1.5rem;
-      margin-bottom: 2rem;
-      text-align: center;
-      transition: transform 0.3s ease;
+    .user-profile {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 1.5rem;
 
-      &:hover { transform: translateY(-5px); }
-
-      .support-icon { font-size: 1.8rem; color: $accent-blue; margin-bottom: 0.75rem; }
-      p { font-size: 0.8rem; font-weight: 700; margin-bottom: 1rem; }
-      button {
-        width: 100%;
-        padding: 0.6rem;
-        background: $white;
-        color: $slate-deep;
-        border: none;
-        border-radius: 0.8rem;
-        font-size: 0.7rem;
+      .avatar-circle {
+        width: 42px;
+        height: 42px;
+        background: rgba(59, 130, 246, 0.3);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
         font-weight: 800;
-        cursor: pointer;
-        &:hover { background: $accent-blue; color: white; }
+        color: #60a5fa;
+      }
+
+      .user-info {
+        display: flex;
+        flex-direction: column;
+        .name { font-size: 0.9rem; font-weight: 600; }
+        .role { font-size: 0.75rem; color: $text-dim; text-transform: capitalize; }
       }
     }
 
-    .logout-action {
+    .footer-actions {
       display: flex;
+      justify-content: space-between;
       align-items: center;
-      gap: 1rem;
-      width: 100%;
-      background: transparent;
-      border: none;
-      color: #fca5a5;
-      font-weight: 700;
-      font-size: 0.9rem;
-      padding: 0.75rem 1rem;
-      cursor: pointer;
-      opacity: 0.7;
-      transition: opacity 0.3s;
-      &:hover { opacity: 1; }
+
+      .logout-btn {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        background: transparent;
+        border: none;
+        color: $text-dim;
+        font-weight: 600;
+        font-size: 0.9rem;
+        cursor: pointer;
+        &:hover { color: white; }
+      }
+
+      .collapse-btn {
+        background: transparent;
+        border: none;
+        color: $text-dim;
+        cursor: pointer;
+      }
     }
   }
+}
+
+// Hide scrollbar but keep functionality
+.custom-scrollbar {
+  scrollbar-width: none;
+  &::-webkit-scrollbar { display: none; }
 }

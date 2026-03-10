@@ -1,14 +1,17 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import { Link } from 'react-router-dom';
-import { Landmark, Mail, ArrowRight, ShieldCheck, KeyRound, ArrowLeft } from 'lucide-react';
+import { useNavigate, Link } from 'react-router-dom';
+import { Mail, ArrowRight, ShieldCheck, KeyRound, ArrowLeft } from 'lucide-react';
+import emailjs from '@emailjs/browser'; 
 import InstitutionalAlert, { AlertType } from '../../components/InstitutionalAlert';
 import VaultLoader from '../../components/VaultLoader';
+import EnvDebugger from '../../components/EnvDebugger'; // 🛡️ Integrity Debugger
 import './ForgotPassword.scss';
 
 const API_BASE = "http://127.0.0.1:5000";
 
 const ForgotPassword: React.FC = () => {
+  const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [alert, setAlert] = useState<{ isVisible: boolean; message: string; type: AlertType }>({
@@ -21,20 +24,43 @@ const ForgotPassword: React.FC = () => {
     e.preventDefault();
     setLoading(true);
 
+    // 1. Generate 6-digit Secure Vault Key
+    const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
+
     try {
-      // Endpoint to be added to your FastAPI app.py
-      await axios.post(`${API_BASE}/auth/recover-vault`, { email });
+      // 🛡️ Accessing variables with Type Assertion to bypass TS ImportMeta errors
+      const env = (import.meta as any).env;
+
+      // 2. Dispatch via Institutional EmailJS Node
+      const templateParams = {
+        to_email: email,
+        recovery_code: otpCode, // Matches {{recovery_code}} in your EmailJS dashboard
+      };
+
+      await emailjs.send(
+        env.VITE_EMAILJS_SERVICE_ID,
+        env.VITE_EMAILJS_TEMPLATE_ID,
+        templateParams,
+        env.VITE_EMAILJS_PUBLIC_KEY
+      );
+
+      // 3. Commit OTP to MongoDB Ledger via FastAPI for Verification
+      await axios.post(`${API_BASE}/auth/store-otp`, { email, otp: otpCode });
       
       setAlert({
         isVisible: true,
-        message: "Recovery protocol initiated. Check your secure inbox.",
+        message: "Institutional Recovery Key dispatched. Check your secure inbox.",
         type: 'success'
       });
-      setEmail('');
+
+      // 4. Secure Handover to Verification Gateway
+      setTimeout(() => navigate('/verify-otp', { state: { email } }), 2500);
+
     } catch (err: any) {
+      console.error("Encryption Node Sync Error:", err);
       setAlert({
         isVisible: true,
-        message: err.response?.data?.detail || "Recovery node unreachable. Verify email.",
+        message: "Vault Node Failure. Ensure environment keys are active.",
         type: 'error'
       });
     } finally {
@@ -44,6 +70,9 @@ const ForgotPassword: React.FC = () => {
 
   return (
     <div className="recovery-container">
+      {/* 🔍 Automated Integrity Check */}
+      <EnvDebugger />
+
       <InstitutionalAlert 
         isVisible={alert.isVisible}
         message={alert.message}
@@ -80,10 +109,10 @@ const ForgotPassword: React.FC = () => {
             className="btn-recovery"
           >
             {loading ? (
-              <VaultLoader size={24} label="" /> 
+              <VaultLoader size={24} label="Encrypting Key..." /> 
             ) : (
               <>
-                <span>Request Access Key</span> 
+                <span>Dispatch Recovery Key</span> 
                 <ArrowRight size={18} />
               </>
             )}
@@ -97,7 +126,7 @@ const ForgotPassword: React.FC = () => {
           
           <div className="security-badge">
             <ShieldCheck size={12} className="text-emerald-400" />
-            <span>RSA-4096 Encrypted Recovery</span>
+            <span>Institutional SMTP Sync</span>
           </div>
         </div>
       </div>

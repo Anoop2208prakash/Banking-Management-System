@@ -4,6 +4,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Landmark, Mail, Lock, ArrowRight, ShieldCheck, UserPlus, Fingerprint, KeySquare } from 'lucide-react';
 import InstitutionalAlert, { AlertType } from '../../components/InstitutionalAlert';
 import VaultLoader from '../../components/VaultLoader'; 
+import EnvDebugger from '../../components/EnvDebugger'; // Fixed: Added Debugger
 import './Login.scss';
 
 const API_BASE = "http://127.0.0.1:5000";
@@ -26,6 +27,8 @@ const Login: React.FC = () => {
 
     try {
       const response = await axios.post(`${API_BASE}/login`, { email, password });
+      
+      // Store Vault Identity Session
       localStorage.setItem('user', JSON.stringify(response.data.user));
       
       setAlert({
@@ -45,6 +48,9 @@ const Login: React.FC = () => {
 
   return (
     <div className="login-container">
+      {/* 🔍 Automated Vault Integrity Check */}
+      <EnvDebugger /> 
+
       <InstitutionalAlert 
         isVisible={alert.isVisible}
         message={alert.message}
@@ -90,7 +96,7 @@ const Login: React.FC = () => {
                 required
               />
             </div>
-            {/* Added: Secure Recovery Link */}
+            
             <div className="forgot-password-wrapper">
               <Link to="/forgot-password" title="Initiate Recovery Protocol">
                 <KeySquare size={14} /> Forgot Key?
@@ -104,7 +110,7 @@ const Login: React.FC = () => {
             className={`btn-vault ${loading ? 'syncing' : ''} active:scale-95 transition-transform`}
           >
             {loading ? (
-              <VaultLoader size={24} label="" /> 
+              <VaultLoader size={24} label="Authenticating..." /> 
             ) : (
               <>
                 <Fingerprint size={20} /> 
